@@ -17,7 +17,9 @@ library LibVault {
         uint256 minLockDuration;
         string version;
         uint256 reentrancyLock;
-
+        // v2: unlockTime for which a user already used their emergency withdraw.
+        // Appended last so existing storage layout is untouched.
+        mapping(address => uint256) emergencyUsedFor;
     }
 
     function vaultStorage() internal pure returns (VaultStorage storage vs) {
