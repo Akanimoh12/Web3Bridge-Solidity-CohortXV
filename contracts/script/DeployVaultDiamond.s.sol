@@ -51,7 +51,11 @@ contract DeployVaultDiamond is Script {
         });
 
         // Deploy the diamond
-        DiamondArgs memory args = DiamondArgs({owner: owner, init: address(vaultInit), initCalldata: abi.encodeWithSelector(VaultInit.init.selector, minLock)});
+        DiamondArgs memory args = DiamondArgs({
+            owner: owner,
+            init: address(vaultInit),
+            initCalldata: abi.encodeWithSelector(VaultInit.init.selector, minLock)
+        });
         Diamond diamond = new Diamond(cut, args);
 
         vm.stopBroadcast();
@@ -62,6 +66,5 @@ contract DeployVaultDiamond is Script {
         console.log("OwnershipFacet deployed to:", address(ownershipFacet));
         console.log("SavingsFacet deployed to:", address(savingsFacet));
         console.log("VAULT (Diamond) deployed to:", vault);
-
     }
 }
