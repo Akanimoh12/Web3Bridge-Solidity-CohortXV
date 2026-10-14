@@ -17,7 +17,7 @@ library LibVault {
         uint256 minLockDuration;
         string version;
         uint256 reentrancyLock;
-
+        bool paused;
     }
 
     function vaultStorage() internal pure returns (VaultStorage storage vs) {

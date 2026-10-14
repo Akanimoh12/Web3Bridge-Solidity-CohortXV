@@ -15,9 +15,10 @@ This is a [Foundry](https://book.getfoundry.sh/) project.
 | `src/diamond/VaultBase.sol` | Shared modifiers the facets inherit |
 | `src/diamond/VaultSelectors.sol` | The function selectors each facet exposes to the diamond |
 | `src/diamond/upgradeInitializers/VaultInit.sol` | Runs once on deployment to set the starting state |
-| `src/diamond/facets/EmergencyFacet.sol` | Empty for now — we add it in class as an upgrade |
+| `src/diamond/facets/PauseFacet.sol` | Owner-only pause controls for deposits and withdrawals |
 | `src/Vulnerable.sol` | A deliberately unsafe vault, used to demonstrate reentrancy |
 | `script/DeployVaultDiamond.s.sol` | Deploys the facets and the diamond |
+| `script/UpgradeVaultPauseFacet.s.sol` | Replaces emergency withdrawal with owner-controlled pause controls |
 
 The diamond itself comes from the reference implementation
 [`mudgen/diamond-1-hardhat`](https://github.com/mudgen/diamond-1-hardhat), installed in `lib/`.
@@ -61,3 +62,22 @@ The script prints the address of every facet and of the vault (the diamond). Opt
 
 > Only ever use Anvil's test keys here. Never put a real private key in a file you commit —
 > `.env` and `anvil.env` are git-ignored for that reason.
+
+## Upgrade an existing vault
+
+The pause upgrade replaces the existing `SavingsFacet`, removes the `emergencyWithdraw()`
+selector, and adds owner-only `pause()`, `unpause()`, and `paused()` selectors. While paused,
+deposits and withdrawals revert; owner controls and saved balances are preserved. The appended
+pause flag starts false in existing vaults. Set `VAULT` to the diamond address and broadcast
+using the diamond owner's key:
+
+```shell
+VAULT=<deployed diamond address> forge script script/UpgradeVaultPauseFacet.s.sol \
+  --rpc-url <Sepolia RPC URL> \
+  --private-key <diamond owner private key> \
+  --broadcast
+```
+
+The upgrade deploys replacement `SavingsFacet` and `PauseFacet` contracts. It must be sent
+by the current diamond owner. Pausing prevents deposit and withdrawal calls until the owner
+unpauses the vault.
