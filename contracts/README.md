@@ -69,15 +69,25 @@ The script prints the address of every facet and of the vault (the diamond). Opt
 The owner can `pause()` and `unpause()` through the **diamond address**. Pausing
 blocks `deposit()` only. Normal `withdraw()` remains available and still requires
 the lock to expire. While paused, `emergencyWithdraw()` lets each saver withdraw
-their own full balance immediately, including locked savings. The owner cannot
-withdraw another saver's balance through this facet.
+their own savings immediately. Before the lock expires, 10% is sent to the
+original diamond deployer and the saver receives the remaining 90%. The fee is
+rounded down to the nearest wei. At or after expiry, the saver receives the full
+balance with no fee. The owner cannot withdraw another saver's balance through
+this facet.
+
+`commissionRecipient()` returns the original deployer recorded by `VaultInit`
+during diamond construction. Ownership transfers do not change this recipient.
+`EmergencyWithdraw` reports the net payout; `EarlyWithdrawalCommission` reports
+the fee and recipient.
 
 Both withdrawal paths clear the balance and unlock time, update `totalSaved`,
-and use the same reentrancy lock before transferring ETH. A failed transfer
-reverts the accounting changes. `paused()` exposes the current state.
+and use the same reentrancy lock before transferring ETH. Failure of either the
+saver payout or commission transfer reverts the entire withdrawal, including
+both transfers and accounting changes. `paused()` exposes the current state.
 
-The pause field is appended to `LibVault.VaultStorage`; existing fields and the
-storage slot are unchanged. Future upgrades must preserve their order and types.
+The pause and commission recipient fields are appended to `LibVault.VaultStorage`;
+existing fields and the storage slot are unchanged. Future upgrades must
+preserve their order and types.
 
 ## Add, replace, and remove functions
 
@@ -110,7 +120,7 @@ account. To add the emergency facet to a diamond where those selectors are absen
 ```shell
 export FACET=<deployed-emergency-facet-address>
 export CUT_ACTION=0
-export SELECTORS="$(cast sig 'pause()'),$(cast sig 'unpause()'),$(cast sig 'emergencyWithdraw()'),$(cast sig 'paused()')"
+export SELECTORS="$(cast sig 'pause()'),$(cast sig 'unpause()'),$(cast sig 'emergencyWithdraw()'),$(cast sig 'paused()'),$(cast sig 'commissionRecipient()')"
 ```
 
 Run the same script command. For Remove, use `CUT_ACTION=2` and list only the
@@ -120,8 +130,11 @@ it does not erase its storage. Keep withdrawal paths available while funds remai
 
 Adding EmergencyFacet to an older deployment does not update its old deposit
 logic. That deployment also needs the updated SavingsFacet selectors replaced;
-submit both cuts in one `diamondCut` transaction if upgrading in place. Do not
-rerun `VaultInit` during an ordinary facet upgrade: it resets configuration.
+submit both cuts in one `diamondCut` transaction if upgrading in place. The
+commission recipient must also be initialized if upgrading a deployment
+that predates this field; early withdrawals with a nonzero fee revert until it
+is set. This change is intended for a fresh deployment. Do not rerun `VaultInit`
+during an ordinary upgrade; it now rejects repeat initialization.
 The single-cut script is for independent changes; use the standard `diamondCut`
 array directly when multiple changes must be atomic.
 
@@ -137,6 +150,7 @@ forge test
 ```
 
 Tests cover emergency access control, pause behavior, locked and emergency
-withdrawals, failed transfers, shared reentrancy protection, selector validation,
+withdrawals, early commission calculation and recipient, failed transfers,
+shared reentrancy protection, selector validation,
 Add/Replace/Remove routing, upgrade storage preservation, and atomic rollback
 when an initializer reverts.

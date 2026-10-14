@@ -10,11 +10,12 @@ import {EmergencyFacet} from "./facets/EmergencyFacet.sol";
 
 library VaultSelectors {
     function emergency() internal pure returns (bytes4[] memory s) {
-        s = new bytes4[](4);
+        s = new bytes4[](5);
         s[0] = EmergencyFacet.pause.selector;
         s[1] = EmergencyFacet.unpause.selector;
         s[2] = EmergencyFacet.emergencyWithdraw.selector;
         s[3] = EmergencyFacet.paused.selector;
+        s[4] = EmergencyFacet.commissionRecipient.selector;
     }
 
     function diamondCut() internal pure returns (bytes4[] memory s) {

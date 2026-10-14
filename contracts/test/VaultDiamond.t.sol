@@ -6,6 +6,7 @@ import {Diamond, DiamondArgs, FunctionNotFound} from "lib/diamond-1-hardhat/cont
 import {IDiamond} from "lib/diamond-1-hardhat/contracts/interfaces/IDiamond.sol";
 import {IDiamondCut} from "lib/diamond-1-hardhat/contracts/interfaces/IDiamondCut.sol";
 import {IDiamondLoupe} from "lib/diamond-1-hardhat/contracts/interfaces/IDiamondLoupe.sol";
+import {IERC173} from "lib/diamond-1-hardhat/contracts/interfaces/IERC173.sol";
 import {DiamondCutFacet} from "lib/diamond-1-hardhat/contracts/facets/DiamondCutFacet.sol";
 import {DiamondLoupeFacet} from "lib/diamond-1-hardhat/contracts/facets/DiamondLoupeFacet.sol";
 import {OwnershipFacet} from "lib/diamond-1-hardhat/contracts/facets/OwnershipFacet.sol";
@@ -80,6 +81,20 @@ contract VaultDiamondTest is Test {
     EmergencyFacet internal emergency;
     IDiamondCut internal cutter;
     IDiamondLoupe internal loupe;
+    bool internal rejectCommission;
+    bool internal attackCommission;
+    bytes4 internal normalCommissionError;
+    bytes4 internal emergencyCommissionError;
+
+    receive() external payable {
+        require(!rejectCommission, "Commission rejected");
+        if (attackCommission) {
+            (, bytes memory normalData) = vault.call(abi.encodeCall(SavingsFacet.withdraw, ()));
+            (, bytes memory emergencyData) = vault.call(abi.encodeCall(EmergencyFacet.emergencyWithdraw, ()));
+            normalCommissionError = bytes4(normalData);
+            emergencyCommissionError = bytes4(emergencyData);
+        }
+    }
 
     function setUp() public {
         savingsImpl = address(new SavingsFacet());
@@ -177,6 +192,117 @@ contract VaultDiamondTest is Test {
         emergency.emergencyWithdraw();
     }
 
+    function testEarlyEmergencyCommissionGoesToDeployer(uint256 amount) public {
+        amount = bound(amount, 1, 10 ether);
+        uint256 recipientBalance = address(this).balance;
+        _deposit(alice, amount);
+        emergency.pause();
+        vm.prank(alice);
+        emergency.emergencyWithdraw();
+        assertEq(emergency.commissionRecipient(), address(this));
+        assertEq(alice.balance, 10 ether - amount / 10);
+        assertEq(address(this).balance, recipientBalance + amount / 10);
+        assertEq(vault.balance, 0);
+        assertEq(savings.totalSaved(), 0);
+    }
+
+    function testMaturedEmergencyWithdrawalHasNoCommission(uint64 elapsedAfterUnlock) public {
+        uint256 recipientBalance = address(this).balance;
+        _deposit(alice, 1 ether);
+        emergency.pause();
+        vm.warp(block.timestamp + 60 + uint256(elapsedAfterUnlock));
+        vm.prank(alice);
+        emergency.emergencyWithdraw();
+        assertEq(alice.balance, 10 ether);
+        assertEq(address(this).balance, recipientBalance);
+        assertEq(vault.balance, 0);
+        assertEq(savings.totalSaved(), 0);
+    }
+
+    function testEmergencyWithdrawalAtUnlockHasNoCommission() public {
+        _deposit(alice, 1 ether);
+        emergency.pause();
+        vm.warp(block.timestamp + 60);
+        vm.prank(alice);
+        emergency.emergencyWithdraw();
+        assertEq(alice.balance, 10 ether);
+    }
+
+    function testCommissionRecipientDoesNotChangeWithOwner() public {
+        _deposit(alice, 1 ether);
+        uint256 recipientBalance = address(this).balance;
+        IERC173(vault).transferOwnership(bob);
+        vm.prank(bob);
+        emergency.pause();
+        vm.prank(alice);
+        emergency.emergencyWithdraw();
+        assertEq(emergency.commissionRecipient(), address(this));
+        assertEq(address(this).balance, recipientBalance + 0.1 ether);
+        assertEq(bob.balance, 10 ether);
+    }
+
+    function testCommissionGoesToDeployerWhenInitialOwnerDiffers() public {
+        IDiamondLoupe.Facet[] memory facets = loupe.facets();
+        IDiamond.FacetCut[] memory cut = new IDiamond.FacetCut[](facets.length);
+        for (uint256 i; i < facets.length; i++) {
+            cut[i] = IDiamond.FacetCut(facets[i].facetAddress, IDiamond.FacetCutAction.Add, facets[i].functionSelectors);
+        }
+        VaultInit initializer = new VaultInit();
+        vm.prank(alice);
+        address newVault =
+            address(new Diamond(cut, DiamondArgs(bob, address(initializer), abi.encodeCall(VaultInit.init, (60)))));
+        assertEq(EmergencyFacet(newVault).commissionRecipient(), alice);
+        assertEq(IERC173(newVault).owner(), bob);
+        vm.prank(bob);
+        SavingsFacet(newVault).deposit{value: 1 ether}(60);
+        vm.prank(bob);
+        EmergencyFacet(newVault).pause();
+        vm.prank(bob);
+        EmergencyFacet(newVault).emergencyWithdraw();
+        assertEq(alice.balance, 10.1 ether);
+        assertEq(bob.balance, 9.9 ether);
+    }
+
+    function testRejectedCommissionRestoresEntireWithdrawal() public {
+        _deposit(alice, 1 ether);
+        emergency.pause();
+        rejectCommission = true;
+        vm.prank(alice);
+        vm.expectRevert(VaultBase.TransferFailed.selector);
+        emergency.emergencyWithdraw();
+        (uint256 amount, uint64 unlock) = savings.savings(alice);
+        assertEq(amount, 1 ether);
+        assertEq(unlock, block.timestamp + 60);
+        assertEq(savings.totalSaved(), 1 ether);
+        assertEq(vault.balance, 1 ether);
+        assertEq(alice.balance, 9 ether);
+        rejectCommission = false;
+        vm.prank(alice);
+        emergency.emergencyWithdraw();
+        assertEq(alice.balance, 9.9 ether);
+    }
+
+    function testCommissionTransferUsesSharedReentrancyGuard() public {
+        _deposit(alice, 1 ether);
+        emergency.pause();
+        attackCommission = true;
+        vm.prank(alice);
+        emergency.emergencyWithdraw();
+        assertEq(normalCommissionError, VaultBase.ReentrantCall.selector);
+        assertEq(emergencyCommissionError, VaultBase.ReentrantCall.selector);
+        assertEq(savings.totalSaved(), 0);
+        assertEq(vault.balance, 0);
+    }
+
+    function testCommissionRecipientCannotBeReinitialized() public {
+        VaultInit initializer = new VaultInit();
+        IDiamond.FacetCut[] memory cut = new IDiamond.FacetCut[](0);
+        vm.expectRevert(VaultInit.AlreadyInitialized.selector);
+        cutter.diamondCut(cut, address(initializer), abi.encodeCall(VaultInit.init, (120)));
+        assertEq(emergency.commissionRecipient(), address(this));
+        assertEq(savings.minLockDuration(), 60);
+    }
+
     function testEmergencyWithdrawalOnlyOwnFundsAndClearsAccounting() public {
         _deposit(alice, 1 ether);
         _deposit(bob, 2 ether);
@@ -186,7 +312,7 @@ contract VaultDiamondTest is Test {
         (uint256 amount, uint64 unlock) = savings.savings(alice);
         assertEq(amount, 0);
         assertEq(unlock, 0);
-        assertEq(alice.balance, 10 ether);
+        assertEq(alice.balance, 9.9 ether);
         assertEq(savings.totalSaved(), 2 ether);
         assertEq(vault.balance, 2 ether);
         (amount,) = savings.savings(bob);
@@ -230,7 +356,7 @@ contract VaultDiamondTest is Test {
         assertFalse(receiver.emergencyReentry());
         assertEq(receiver.normalError(), VaultBase.ReentrantCall.selector);
         assertEq(receiver.emergencyError(), VaultBase.ReentrantCall.selector);
-        assertEq(address(receiver).balance, 2 ether);
+        assertEq(address(receiver).balance, 1.9 ether);
         assertEq(savings.totalSaved(), 0);
     }
 

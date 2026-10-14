@@ -18,6 +18,7 @@ library LibVault {
         uint256 reentrancyLock;
         // Append new fields only: existing diamond storage must not move.
         bool paused;
+        address commissionRecipient;
     }
 
     function vaultStorage() internal pure returns (VaultStorage storage vs) {
