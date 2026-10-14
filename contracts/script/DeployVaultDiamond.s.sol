@@ -10,6 +10,7 @@ import {VaultInit} from "../src/diamond/upgradeInitializers/VaultInit.sol";
 import {OwnershipFacet} from "../lib/diamond-1-hardhat/contracts/facets/OwnershipFacet.sol";
 import {DiamondLoupeFacet} from "../lib/diamond-1-hardhat/contracts/facets/DiamondLoupeFacet.sol";
 import {DiamondCutFacet} from "../lib/diamond-1-hardhat/contracts/facets/DiamondCutFacet.sol";
+import {EmergencyFacet} from "../src/diamond/facets/EmergencyFacet.sol";
 
 contract DeployVaultDiamond is Script {
     function run() external returns (address vault) {
@@ -23,11 +24,12 @@ contract DeployVaultDiamond is Script {
         DiamondLoupeFacet loupeFacet = new DiamondLoupeFacet();
         OwnershipFacet ownershipFacet = new OwnershipFacet();
         SavingsFacet savingsFacet = new SavingsFacet();
+        EmergencyFacet emergencyFacet = new EmergencyFacet();
 
         VaultInit vaultInit = new VaultInit();
 
         // Describing the first cut
-        IDiamond.FacetCut[] memory cut = new IDiamond.FacetCut[](4);
+IDiamond.FacetCut[] memory cut = new IDiamond.FacetCut[](5);
 
         cut[0] = IDiamond.FacetCut({
             facetAddress: address(cutFacet),
@@ -49,6 +51,11 @@ contract DeployVaultDiamond is Script {
             action: IDiamond.FacetCutAction.Add,
             functionSelectors: VaultSelectors.savings()
         });
+        cut[4] = IDiamond.FacetCut({
+        facetAddress: address(emergencyFacet),
+        action: IDiamond.FacetCutAction.Add,
+        functionSelectors: VaultSelectors.emergency()
+        });
 
         // Deploy the diamond
         DiamondArgs memory args = DiamondArgs({owner: owner, init: address(vaultInit), initCalldata: abi.encodeWithSelector(VaultInit.init.selector, minLock)});
@@ -62,6 +69,7 @@ contract DeployVaultDiamond is Script {
         console.log("OwnershipFacet deployed to:", address(ownershipFacet));
         console.log("SavingsFacet deployed to:", address(savingsFacet));
         console.log("VAULT (Diamond) deployed to:", vault);
+        console.log("EmergencyFacet deployed to:", address(emergencyFacet));
 
     }
 }
