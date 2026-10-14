@@ -17,6 +17,7 @@ library LibVault {
         uint256 minLockDuration;
         string version;
         uint256 reentrancyLock;
+        uint256 emergencyPenaltyBps;
 
     }
 
