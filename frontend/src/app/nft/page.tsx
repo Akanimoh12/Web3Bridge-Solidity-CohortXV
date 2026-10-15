@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { parseEventLogs, type Address } from "viem";
 import { useAccount, usePublicClient, useReadContract, useSwitchChain, useWriteContract } from "wagmi";
 import { sepolia } from "wagmi/chains";
@@ -15,6 +16,16 @@ type GalleryItem = {
   owner: Address;
   metadata: NftMetadata;
 };
+
+const featuredArtworks = [
+  { title: "Glass Garden", artist: "Soft forms, new growth", image: "/artworks/glass-garden.svg", tone: "MOSS / 01" },
+  { title: "Tidal Memory", artist: "A study in blue and return", image: "/artworks/tidal-memory.svg", tone: "TIDE / 02" },
+  { title: "Solstice Bloom", artist: "The warmth of becoming", image: "/artworks/solstice-bloom.svg", tone: "SUN / 03" },
+  { title: "Quiet Orbit", artist: "Somewhere between here and there", image: "/artworks/quiet-orbit.svg", tone: "NIGHT / 04" },
+  { title: "Mosslight", artist: "A small clearing in the day", image: "/artworks/mosslight.svg", tone: "FERN / 05" },
+  { title: "Pink Current", artist: "A bright thought, in motion", image: "/artworks/pink-current.svg", tone: "ROSE / 06" },
+  { title: "Moon Archive", artist: "Collected fragments of stillness", image: "/artworks/moon-archive.svg", tone: "DUSK / 07" },
+] as const;
 
 const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -111,8 +122,9 @@ export default function NftPage() {
         const count = Number(totalMinted);
         if (!Number.isSafeInteger(count)) throw new Error("The collection is too large to load safely.");
         const loaded = await Promise.all(
-          Array.from({ length: count }, async (_, index) => {
-            const tokenId = BigInt(index);
+          Array.from({ length: count }, (_, index) => BigInt(index))
+            .filter((tokenId) => tokenId !== 0n)
+            .map(async (tokenId) => {
             const [uri, owner] = await Promise.all([
               client.readContract({
                 address: nftAddress,
@@ -131,9 +143,11 @@ export default function NftPage() {
             if (!metadataResponse.ok) throw new Error(`Metadata for token #${tokenId} is not available from IPFS.`);
             const metadata = parseMetadata(await metadataResponse.json());
             return { tokenId, uri, owner, metadata };
-          }),
+            }),
         );
-        if (!cancelled) setItems(loaded.reverse());
+        if (!cancelled) {
+          setItems(loaded.reverse());
+        }
       } catch (error) {
         if (!cancelled) setGalleryError(error instanceof Error ? error.message : "The gallery could not be loaded.");
       } finally {
@@ -298,16 +312,54 @@ export default function NftPage() {
         </aside>
       </div>
 
+      <section className="featured-section" aria-labelledby="featured-heading">
+        <div className="section-heading featured-heading">
+          <div>
+            <p className="eyebrow">A FEW THINGS WE MADE</p>
+            <h2 id="featured-heading">Seven little worlds.</h2>
+            <p className="featured-caption">Original studio studies to spark your next piece. These previews are not minted NFTs.</p>
+          </div>
+          <span className="featured-count">01 — 07</span>
+        </div>
+        <div className="featured-grid">
+          {featuredArtworks.map((artwork, index) => (
+            <article className="featured-card" key={artwork.title}>
+              <div className="featured-art">
+                <Image
+                  src={artwork.image}
+                  alt={`${artwork.title} — original abstract artwork`}
+                  width={720}
+                  height={900}
+                  loading="eager"
+                  sizes="(max-width: 600px) 50vw, (max-width: 980px) 33vw, 25vw"
+                />
+                <span className="featured-index">{String(index + 1).padStart(2, "0")}</span>
+              </div>
+              <div className="featured-info">
+                <div>
+                  <p className="featured-tone">{artwork.tone}</p>
+                  <h3>{artwork.title}</h3>
+                  <p className="featured-artist">{artwork.artist}</p>
+                </div>
+                <span className="featured-spark" aria-hidden="true">✳</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="gallery-section">
         <div className="section-heading gallery-heading">
           <div><p className="eyebrow">02 / THE COLLECTION</p><h2>Made here, held everywhere.</h2></div>
-          <span className="collection-count">{totalMinted?.toString() ?? "—"} pieces</span>
+          <span className="collection-count">
+            {totalMinted === undefined ? "—" : (totalMinted > 0n ? totalMinted - 1n : 0n).toString()} pieces
+          </span>
         </div>
         {countLoading || galleryLoading ? <p className="form-message">Loading the collection…</p> : null}
         {countError && <p className="form-message error-message">Could not read the collection. Confirm the NFT address and Sepolia RPC settings.</p>}
         {galleryError && <p className="form-message error-message">{galleryError}</p>}
-        {!countLoading && totalMinted === 0n && (
-          <div className="empty-gallery"><span>✳</span><p>The first piece is waiting to be made.</p></div>
+        {!countLoading && !galleryLoading && !countError && !galleryError && items.length === 0 && (
+          <div className="empty-gallery"><span>✳</span><p>No originals in the public gallery yet. Your first piece is waiting to be made.</p></div>
         )}
         {items.length > 0 && (
           <div className="gallery-grid">

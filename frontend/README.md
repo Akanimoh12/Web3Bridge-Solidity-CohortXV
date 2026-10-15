@@ -11,6 +11,8 @@ W3B Studio lets a visitor connect a wallet, create an NFT, upload its image and 
 
 The NFT's metadata `tokenURI` is an `ipfs://` URI. The image and metadata are fetched back from IPFS for the collection gallery. The ETH reference value is a creator estimate; it is not a sale listing or an oracle appraisal.
 
+The NFT studio also includes seven original SVG art studies as visual inspiration. They are static previews, not minted NFTs. Token #000 is intentionally hidden from the public gallery; it remains on-chain and is not deleted.
+
 ## Run locally
 
 Use Node.js 20 or newer:

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 810" fill="none">
+  <defs>
+    <linearGradient id="sunset" x1="78" y1="25" x2="642" y2="785" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F1C979"/>
+      <stop offset=".55" stop-color="#E68B5E"/>
+      <stop offset="1" stop-color="#A94F46"/>
+    </linearGradient>
+    <linearGradient id="petal" x1="284" y1="206" x2="495" y2="510" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF0C0"/>
+      <stop offset="1" stop-color="#F1B95C"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#sunset)" d="M0 0h720v810H0z"/>
+  <circle cx="360" cy="376" r="245" fill="#F4D486" fill-opacity=".28"/>
+  <circle cx="360" cy="376" r="190" stroke="#F7E8BF" stroke-opacity=".48" stroke-width="2"/>
+  <path d="M361 729V451" stroke="#355849" stroke-width="14" stroke-linecap="round"/>
+  <path d="M357 607c-79-91-150-99-213-24 81 59 153 67 213 24ZM366 550c70-86 139-103 207-50-69 70-139 87-207 50Z" fill="#638064"/>
+  <path d="M358 583c-59-47-112-67-159-62M369 543c54-57 105-82 153-77" stroke="#D1D9A4" stroke-opacity=".8" stroke-width="5" stroke-linecap="round"/>
+  <g fill="url(#petal)">
+    <ellipse cx="360" cy="244" rx="53" ry="112"/>
+    <ellipse cx="360" cy="244" rx="53" ry="112" transform="rotate(45 360 376)"/>
+    <ellipse cx="360" cy="244" rx="53" ry="112" transform="rotate(90 360 376)"/>
+    <ellipse cx="360" cy="244" rx="53" ry="112" transform="rotate(135 360 376)"/>
+  </g>
+  <circle cx="360" cy="376" r="75" fill="#6C4839"/>
+  <circle cx="360" cy="376" r="55" fill="#B37742"/>
+  <g fill="#F7D887">
+    <circle cx="345" cy="357" r="5"/><circle cx="374" cy="351" r="5"/><circle cx="390" cy="376" r="5"/>
+    <circle cx="369" cy="399" r="5"/><circle cx="340" cy="394" r="5"/><circle cx="360" cy="376" r="6"/>
+  </g>
+  <path d="M107 701h506" stroke="#F7E7C0" stroke-opacity=".38" stroke-width="2"/>
+  <circle cx="129" cy="116" r="6" fill="#FFF1C6"/>
+  <circle cx="591" cy="184" r="4" fill="#FFF1C6"/>
+</svg>
