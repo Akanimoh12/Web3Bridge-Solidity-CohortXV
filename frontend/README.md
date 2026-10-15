@@ -6,7 +6,7 @@ Users can explore ENS profiles, view Ethereum wallet balances in USD using a Cha
 
 ## Live application
 
-Vercel: Add the production URL after deployment.
+Vercel: https://bridgeid-web3bridge.vercel.app/
 
 ## Features
 
