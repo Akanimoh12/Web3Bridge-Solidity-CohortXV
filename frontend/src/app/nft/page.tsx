@@ -30,7 +30,10 @@ function friendlyError(error: unknown) {
   const message = error instanceof Error ? error.message : "";
   if (/rejected|denied|cancelled/i.test(message)) return "The request was cancelled in your wallet. Nothing was minted.";
   if (/insufficient funds/i.test(message)) return "Your wallet needs more Sepolia ETH for gas.";
+  if (/already pending|request is already pending/i.test(message)) return "A wallet request is already open. Complete or cancel it, then try again.";
   if (/chain|network|switch/i.test(message)) return "Switch your wallet to Sepolia, then try again.";
+  if (/failed to fetch|rpc|timeout/i.test(message)) return "Sepolia did not respond. Check your connection, then try again.";
+  if (/revert|contract function|estimate gas/i.test(message)) return "The contract rejected the mint before charging gas. Please try again.";
   if (/IPFS|Pinata|upload|metadata/i.test(message)) return message;
   return "Something interrupted the mint. Check your wallet and connection, then try again.";
 }
@@ -125,11 +128,20 @@ export default function NftPage() {
 
       setStep("wallet");
       if (chainId !== sepolia.id) await switchChainAsync({ chainId: sepolia.id });
+      const { request } = await publicClient.simulateContract({
+        address: NFT_ADDRESS,
+        abi: nftAbi,
+        functionName: "mint",
+        args: [uri],
+        account: address,
+      });
       const hash = await writeContractAsync({
         address: NFT_ADDRESS,
         abi: nftAbi,
         functionName: "mint",
         args: [uri],
+        account: address,
+        gas: request.gas,
         chainId: sepolia.id,
       });
 
