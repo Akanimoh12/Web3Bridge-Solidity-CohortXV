@@ -1,5 +1,6 @@
 "use client";
 
+import { RefreshCw } from "lucide-react";
 import { useChainlinkPrice } from "@/hooks/useChainlinkPrice";
 
 export function PriceTicker() {
@@ -18,9 +19,9 @@ export function PriceTicker() {
         type="button"
         onClick={() => refetch()}
         title="Refresh price feed"
-        className={`ml-1 text-blue-600 hover:text-blue-800 transition ${isFetching ? "animate-spin" : ""}`}
+        className="ml-1 text-blue-600 hover:text-blue-800 transition"
       >
-        ↻
+        <RefreshCw className={`h-3 w-3 ${isFetching ? "animate-spin" : ""}`} />
       </button>
     </div>
   );

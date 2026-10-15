@@ -2,6 +2,7 @@
 
 import { useEnsAvatar, useEnsName } from "wagmi";
 import { mainnet } from "wagmi/chains";
+import { User } from "lucide-react";
 
 interface EnsAddressProps {
   address?: `0x${string}` | string | null;
@@ -35,8 +36,12 @@ export function EnsAddress({ address, showAvatar = true, className = "" }: EnsAd
           // eslint-disable-next-line @next/next/no-img-element
           <img src={avatar} alt="Avatar" className="h-4 w-4 rounded-full border border-blue-200 object-cover" />
         ) : (
-          <span className="h-4 w-4 rounded-full bg-blue-100 text-blue-700 text-[9px] font-bold flex items-center justify-center">
-            {ensName ? ensName[0].toUpperCase() : "Ξ"}
+          <span className="h-4 w-4 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center">
+            {ensName ? (
+              <span className="text-[9px] font-bold">{ensName[0].toUpperCase()}</span>
+            ) : (
+              <User className="h-2.5 w-2.5 text-blue-700" />
+            )}
           </span>
         )
       )}

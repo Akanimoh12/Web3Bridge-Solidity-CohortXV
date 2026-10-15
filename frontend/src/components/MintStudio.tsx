@@ -4,6 +4,7 @@ import { useState } from "react";
 import { parseEventLogs } from "viem";
 import { useAccount, usePublicClient, useSwitchChain, useWriteContract } from "wagmi";
 import { sepolia } from "wagmi/chains";
+import { ImagePlus, AlertCircle, CheckCircle2, ExternalLink } from "lucide-react";
 import { NFT_ADDRESS, nftAbi, ipfsToHttp } from "@/contracts/nft";
 import { uploadNft } from "@/lib/ipfs";
 import { useChainlinkPrice } from "@/hooks/useChainlinkPrice";
@@ -91,7 +92,7 @@ export function MintStudio({ onMintSuccess }: MintStudioProps) {
         imageUrl: previewUrl || undefined,
       });
 
-      setStepStatus("Mint successful! 🎉");
+      setStepStatus("Mint successful!");
       // Reset form
       setName("");
       setDescription("");
@@ -190,7 +191,7 @@ export function MintStudio({ onMintSuccess }: MintStudioProps) {
               </div>
             ) : (
               <div className="text-center py-6 text-neutral-400">
-                <div className="mx-auto h-12 w-12 text-blue-300 mb-2">🖼️</div>
+                <ImagePlus className="mx-auto h-10 w-10 text-blue-300 mb-2" />
                 <p className="text-xs font-medium text-neutral-600">Select an image to see preview</p>
                 <p className="text-[11px] text-neutral-400">PNG, JPG, SVG, GIF supported</p>
               </div>
@@ -199,8 +200,9 @@ export function MintStudio({ onMintSuccess }: MintStudioProps) {
         </div>
 
         {errorMsg && (
-          <div className="rounded-lg bg-red-50 p-3 text-xs text-red-600 border border-red-200 break-words">
-            ⚠️ {errorMsg}
+          <div className="flex items-center gap-2 rounded-lg bg-red-50 p-3 text-xs text-red-600 border border-red-200 break-words">
+            <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
+            <span>{errorMsg}</span>
           </div>
         )}
 
@@ -236,7 +238,8 @@ export function MintStudio({ onMintSuccess }: MintStudioProps) {
         <div className="mt-5 rounded-lg border border-blue-200 bg-blue-50/50 p-4 text-xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-bold text-blue-900 flex items-center gap-1.5">
-              <span>✅</span> Successfully Minted Token #{mintedResult.tokenId}
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <span>Successfully Minted Token #{mintedResult.tokenId}</span>
             </span>
             <span className="rounded bg-black px-2 py-0.5 text-[10px] font-semibold text-white">
               Sepolia
@@ -251,17 +254,19 @@ export function MintStudio({ onMintSuccess }: MintStudioProps) {
               href={`https://sepolia.etherscan.io/tx/${mintedResult.hash}`}
               target="_blank"
               rel="noreferrer"
-              className="text-blue-600 underline hover:text-blue-800 font-medium"
+              className="inline-flex items-center gap-1 text-blue-600 underline hover:text-blue-800 font-medium"
             >
-              View Transaction on Etherscan ↗
+              <span>View Transaction on Etherscan</span>
+              <ExternalLink className="h-3 w-3" />
             </a>
             <a
               href={ipfsToHttp(mintedResult.uri)}
               target="_blank"
               rel="noreferrer"
-              className="text-blue-600 underline hover:text-blue-800 font-medium"
+              className="inline-flex items-center gap-1 text-blue-600 underline hover:text-blue-800 font-medium"
             >
-              View IPFS Metadata ↗
+              <span>View IPFS Metadata</span>
+              <ExternalLink className="h-3 w-3" />
             </a>
           </div>
         </div>

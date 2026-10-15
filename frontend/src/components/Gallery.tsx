@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useReadContract } from "wagmi";
 import { sepolia } from "wagmi/chains";
+import { RefreshCw, Image as ImageIcon } from "lucide-react";
 import { NFT_ADDRESS, nftAbi } from "@/contracts/nft";
 import { NftCard } from "./NftCard";
 
@@ -56,7 +57,7 @@ export function Gallery() {
             title="Refresh gallery"
             className="rounded-lg border border-neutral-200 p-1.5 text-xs text-neutral-600 hover:border-blue-400 hover:text-blue-600 transition"
           >
-            ↻
+            <RefreshCw className="h-3 w-3" />
           </button>
         </div>
       </div>
@@ -110,7 +111,7 @@ export function Gallery() {
         </div>
       ) : count === 0 ? (
         <div className="rounded-xl border border-dashed border-neutral-300 bg-neutral-50/50 p-8 text-center">
-          <div className="text-3xl mb-2 text-blue-400">🎨</div>
+          <ImageIcon className="mx-auto h-10 w-10 text-blue-300 mb-2" />
           <h4 className="text-sm font-semibold text-neutral-800">No NFTs minted yet</h4>
           <p className="text-xs text-neutral-500 mt-1 max-w-sm mx-auto">
             Be the first to mint! Upload an image above to pin it to IPFS and mint it on Sepolia.

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useReadContract } from "wagmi";
 import { sepolia } from "wagmi/chains";
+import { Image as ImageIcon, ExternalLink } from "lucide-react";
 import { NFT_ADDRESS, nftAbi, ipfsToHttp } from "@/contracts/nft";
 import { EnsAddress } from "./EnsAddress";
 import { useChainlinkPrice } from "@/hooks/useChainlinkPrice";
@@ -87,7 +88,6 @@ export function NftCard({ tokenId }: NftCardProps) {
             alt={metadata?.name || `Token #${tokenId.toString()}`}
             className="h-full w-full object-cover transition duration-300 hover:scale-105"
             onError={(e) => {
-              // fallback if gateway fails
               (e.target as HTMLImageElement).src = "https://placehold.co/400x400/2563eb/ffffff?text=IPFS+Image";
             }}
           />
@@ -96,7 +96,7 @@ export function NftCard({ tokenId }: NftCardProps) {
         ) : metaError ? (
           <div className="text-xs text-neutral-400 p-2 text-center">Metadata on IPFS</div>
         ) : (
-          <div className="text-2xl text-blue-300">🖼️</div>
+          <ImageIcon className="h-8 w-8 text-blue-300" />
         )}
         <span className="absolute top-2 right-2 rounded-full bg-black/75 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">
           #{tokenId.toString()}
@@ -133,17 +133,19 @@ export function NftCard({ tokenId }: NftCardProps) {
               href={ipfsToHttp(uri)}
               target="_blank"
               rel="noreferrer"
-              className="text-blue-600 hover:underline"
+              className="inline-flex items-center gap-0.5 text-blue-600 hover:underline"
             >
-              IPFS URI ↗
+              <span>IPFS URI</span>
+              <ExternalLink className="h-2.5 w-2.5" />
             </a>
             <a
               href={`https://sepolia.etherscan.io/token/${NFT_ADDRESS}?a=${tokenId.toString()}`}
               target="_blank"
               rel="noreferrer"
-              className="text-neutral-500 hover:text-black"
+              className="inline-flex items-center gap-0.5 text-neutral-500 hover:text-black"
             >
-              Etherscan ↗
+              <span>Etherscan</span>
+              <ExternalLink className="h-2.5 w-2.5" />
             </a>
           </div>
         )}

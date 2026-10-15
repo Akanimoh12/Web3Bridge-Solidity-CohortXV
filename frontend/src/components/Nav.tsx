@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Hexagon } from "lucide-react";
 import { ConnectButton } from "./ConnectButton";
 import { PriceTicker } from "./PriceTicker";
 
@@ -10,7 +11,7 @@ export function Nav() {
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <Link href="/" className="flex items-center gap-2 group">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white font-black text-sm shadow-sm transition group-hover:bg-blue-700">
-            Ξ
+            <Hexagon className="h-4 w-4" />
           </div>
           <div className="flex flex-col">
             <span className="text-base font-extrabold tracking-tight text-black">

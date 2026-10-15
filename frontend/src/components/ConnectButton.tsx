@@ -2,6 +2,7 @@
 
 import { useAccount, useConnect, useDisconnect, useEnsName, useSwitchChain } from "wagmi";
 import { mainnet, sepolia } from "wagmi/chains";
+import { X, Wallet } from "lucide-react";
 
 export function ConnectButton() {
   const { address, isConnected, chainId } = useAccount();
@@ -45,7 +46,7 @@ export function ConnectButton() {
         >
           <span className="h-2 w-2 rounded-full bg-blue-600"></span>
           <span>{displayName}</span>
-          <span className="text-[10px] text-neutral-400 font-normal ml-0.5">✕</span>
+          <X className="h-3 w-3 text-neutral-400 hover:text-black ml-0.5" />
         </button>
       </div>
     );
@@ -56,9 +57,10 @@ export function ConnectButton() {
       type="button"
       disabled={isPending}
       onClick={() => connect({ connector: connectors[0] })}
-      className="rounded-lg bg-black px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:opacity-50 transition"
+      className="flex items-center gap-1.5 rounded-lg bg-black px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:opacity-50 transition"
     >
-      {isPending ? "Connecting…" : "Connect Wallet"}
+      <Wallet className="h-3.5 w-3.5" />
+      <span>{isPending ? "Connecting…" : "Connect Wallet"}</span>
     </button>
   );
 }

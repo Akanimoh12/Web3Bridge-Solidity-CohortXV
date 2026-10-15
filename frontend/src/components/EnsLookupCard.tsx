@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAccount, useEnsAddress, useEnsAvatar, useEnsName, useEnsText } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { normalize } from "viem/ens";
+import { AlertCircle, CheckCircle2, ExternalLink, AtSign } from "lucide-react";
 
 function safeNormalize(input: string) {
   try {
@@ -104,8 +105,9 @@ export function EnsLookupCard() {
         </div>
 
         {input && !normalizedName && (
-          <div className="rounded-lg bg-red-50 p-2.5 text-xs text-red-600 border border-red-200">
-            ⚠️ Invalid ENS name format. Please enter a valid name ending in .eth.
+          <div className="flex items-center gap-2 rounded-lg bg-red-50 p-2.5 text-xs text-red-600 border border-red-200">
+            <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
+            <span>Invalid ENS name format. Please enter a valid name ending in .eth.</span>
           </div>
         )}
 
@@ -140,8 +142,9 @@ export function EnsLookupCard() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-bold text-black text-base truncate">{input}</span>
                   {primaryReverseName && primaryReverseName.toLowerCase() === normalizedName?.toLowerCase() && (
-                    <span className="rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
-                      Verified Primary
+                    <span className="flex items-center gap-1 rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                      <CheckCircle2 className="h-3 w-3" />
+                      <span>Verified Primary</span>
                     </span>
                   )}
                 </div>
@@ -153,15 +156,17 @@ export function EnsLookupCard() {
               <div className="pt-2 border-t border-blue-100/60 text-xs text-neutral-700 space-y-1">
                 {description && <p className="italic">“{description}”</p>}
                 {twitter && (
-                  <p className="flex items-center gap-1 text-blue-600 font-medium">
+                  <p className="flex items-center gap-1.5 text-blue-600 font-medium">
+                    <AtSign className="h-3.5 w-3.5" />
                     <span>Twitter/X:</span>
                     <a
                       href={`https://x.com/${twitter.replace("@", "")}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="underline hover:text-blue-800"
+                      className="inline-flex items-center gap-0.5 underline hover:text-blue-800"
                     >
-                      @{twitter.replace("@", "")}
+                      <span>@{twitter.replace("@", "")}</span>
+                      <ExternalLink className="h-3 w-3" />
                     </a>
                   </p>
                 )}

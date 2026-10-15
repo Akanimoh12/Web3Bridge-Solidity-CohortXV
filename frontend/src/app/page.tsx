@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Zap, Paintbrush, Image as ImageIcon, Search } from "lucide-react";
 import { EnsLookupCard } from "@/components/EnsLookupCard";
 import { MintStudio } from "@/components/MintStudio";
 import { Gallery } from "@/components/Gallery";
@@ -13,8 +14,9 @@ export default function Home() {
     <div className="space-y-8">
       {/* Hero Banner */}
       <section className="text-center space-y-3 py-4">
-        <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50/80 px-3.5 py-1 text-xs font-semibold text-blue-700 shadow-sm">
-          <span>⚡ Web3Bridge Cohort XV · Day 3</span>
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50/80 px-3.5 py-1 text-xs font-semibold text-blue-700 shadow-sm">
+          <Zap className="h-3.5 w-3.5 text-blue-600" />
+          <span>Web3Bridge Cohort XV · Day 3</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-black">
           Decentralized <span className="text-blue-600">NFT Studio</span> & Gallery
@@ -65,7 +67,7 @@ export default function Home() {
               : "border-transparent text-neutral-500 hover:text-black"
           }`}
         >
-          <span>🎨</span>
+          <Paintbrush className="h-4 w-4" />
           <span>Mint Studio</span>
         </button>
         <button
@@ -76,7 +78,7 @@ export default function Home() {
               : "border-transparent text-neutral-500 hover:text-black"
           }`}
         >
-          <span>🖼️</span>
+          <ImageIcon className="h-4 w-4" />
           <span>Gallery</span>
         </button>
         <button
@@ -87,7 +89,7 @@ export default function Home() {
               : "border-transparent text-neutral-500 hover:text-black"
           }`}
         >
-          <span>🔍</span>
+          <Search className="h-4 w-4" />
           <span>ENS Lookup</span>
         </button>
       </div>
