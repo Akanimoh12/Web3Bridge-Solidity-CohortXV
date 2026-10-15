@@ -7,7 +7,8 @@ export const SEPOLIA_PARAMS = {
   chainName: SEPOLIA_NAME,
   nativeCurrency: { name: 'Sepolia ETH', symbol: 'ETH', decimals: 18 },
   rpcUrls: [
-    import.meta.env.VITE_SEPOLIA_RPC_URL?.trim() || 'https://rpc.sepolia.org',
+    import.meta.env.VITE_SEPOLIA_RPC_URL?.trim() ||
+      'https://ethereum-sepolia-rpc.publicnode.com',
   ],
   blockExplorerUrls: ['https://sepolia.etherscan.io'],
 }

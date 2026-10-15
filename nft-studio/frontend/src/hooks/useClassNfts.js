@@ -8,7 +8,8 @@ import {
 import { ipfsToHttp } from '../lib/ipfs'
 
 const SEPOLIA_READ_RPC =
-  import.meta.env.VITE_SEPOLIA_RPC_URL?.trim() || 'https://rpc.sepolia.org'
+  import.meta.env.VITE_SEPOLIA_RPC_URL?.trim() ||
+  'https://ethereum-sepolia-rpc.publicnode.com'
 
 async function loadMetadata(uri) {
   const url = ipfsToHttp(uri)
