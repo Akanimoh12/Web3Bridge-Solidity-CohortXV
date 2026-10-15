@@ -11,7 +11,6 @@ test("formats a valid Chainlink answer using its decimals", () => {
     assert.equal(result.isStale, false);
   }
 });
-
 test("rejects non-positive and incomplete answers", () => {
   assert.equal(parsePriceFeed([1n, 0n, 0n, 1n, 1n], 8, 2).valid, false);
   assert.equal(parsePriceFeed([2n, 1n, 0n, 1n, 1n], 8, 2).valid, false);

@@ -49,7 +49,6 @@ export function parsePriceFeed(
     isStale: ageSeconds > PRICE_STALE_AFTER_SECONDS,
   };
 }
-
 export function ethBalanceToUsd(balanceWei: bigint, priceUsd: number) {
   return Number(formatUnits(balanceWei, 18)) * priceUsd;
 }

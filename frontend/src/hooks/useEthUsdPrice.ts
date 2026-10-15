@@ -57,4 +57,3 @@ export function useEthUsdPrice() {
 
   return { ...state, refresh };
 }
-
