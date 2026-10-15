@@ -4,16 +4,41 @@ export async function uploadToIpfs(file: File): Promise<string> {
   const form = new FormData();
   form.append("file", file);
 
-  const res = await fetch("/api/upload", { method: "POST", body: form });
-  const json = await res.json();
-  if (!res.ok) throw new Error(JSON.stringify(json));
-  return json.cid as string;
+  const response = await fetch("/api/upload", { method: "POST", body: form });
+  const result: unknown = await response.json();
+  if (!response.ok) {
+    const message =
+      typeof result === "object" && result !== null && "error" in result && typeof result.error === "string"
+        ? result.error
+        : "The file could not be uploaded to IPFS.";
+    throw new Error(message);
+  }
+  if (
+    typeof result !== "object" ||
+    result === null ||
+    !("cid" in result) ||
+    typeof result.cid !== "string"
+  ) {
+    throw new Error("The IPFS upload route returned an invalid response.");
+  }
+  return result.cid;
 }
 
-// Uploads the image, then the metadata JSON that points to it. Returns "ipfs://<metadata CID>".
-export async function uploadNft(image: File, name: string, description: string): Promise<string> {
+export type NftMetadata = {
+  name: string;
+  description: string;
+  image: string;
+  referenceEth: string;
+};
+
+export async function uploadNft(
+  image: File,
+  name: string,
+  description: string,
+  referenceEth: string,
+): Promise<string> {
   const imageCid = await uploadToIpfs(image);
-  const metadata = { name, description, image: `ipfs://${imageCid}` };
+  const metadata: NftMetadata = { name, description, image: `ipfs://${imageCid}`, referenceEth };
   const metadataFile = new File([JSON.stringify(metadata)], "metadata.json", { type: "application/json" });
   const metadataCid = await uploadToIpfs(metadataFile);
   return `ipfs://${metadataCid}`;

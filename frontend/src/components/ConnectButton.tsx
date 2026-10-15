@@ -1,27 +1,35 @@
 "use client";
 
 import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { AddressLabel } from "./AddressLabel";
 
 export function ConnectButton() {
-  const { address, isConnected, chain } = useAccount(); // is a wallet connected? which address? which network?
-  const { connectors, connect, isPending } = useConnect(); // the list of ways to connect, and the connect action
+  const { address, isConnected, chain } = useAccount();
+  const { connectors, connect, isPending } = useConnect();
   const { disconnect } = useDisconnect();
 
-  if (isConnected) {
+  if (isConnected && address) {
     return (
-      <button className="rounded bg-neutral-200 px-3 py-1 text-sm" onClick={() => disconnect()}>
-        {chain?.name ?? "Unknown network"} · {address?.slice(0, 6)}…{address?.slice(-4)} · disconnect
-      </button>
+      <div className="wallet-connected">
+        <span className="wallet-chain">{chain?.name ?? "Unknown network"}</span>
+        <AddressLabel address={address} />
+        <button className="text-button" onClick={() => disconnect()}>Disconnect</button>
+      </div>
     );
   }
 
   return (
-    <button
-      className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50"
-      disabled={isPending}
-      onClick={() => connect({ connector: connectors[0] })}
-    >
-      {isPending ? "Connecting…" : "Connect Wallet"}
-    </button>
+    <div className="connect-options">
+      {connectors.map((connector) => (
+        <button
+          key={connector.uid}
+          className="button button-dark button-small"
+          disabled={isPending}
+          onClick={() => connect({ connector })}
+        >
+          {isPending ? "Connecting…" : `Connect ${connector.name}`}
+        </button>
+      ))}
+    </div>
   );
 }

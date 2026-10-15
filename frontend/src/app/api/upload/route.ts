@@ -1,28 +1,59 @@
 import { NextResponse } from "next/server";
 
-// This file runs on OUR SERVER, never in the browser. So the secret PINATA_JWT stays secret.
-// Pinata Files API v3: https://docs.pinata.cloud
-export async function POST(req: Request) {
-  // 1. Take the file the browser sent us
-  const form = await req.formData();
-  const file = form.get("file");
-  if (!(file instanceof File)) {
-    return NextResponse.json({ error: "No file provided" }, { status: 400 });
+const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
+const MAX_METADATA_SIZE = 64 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+
+export async function POST(request: Request) {
+  const pinataJwt = process.env.PINATA_JWT;
+  if (!pinataJwt) {
+    return NextResponse.json({ error: "IPFS uploads are not configured on the server." }, { status: 503 });
   }
 
-  // 2. Send it to Pinata, with our secret key, on the PUBLIC IPFS network
-  const body = new FormData();
-  body.append("network", "public");
-  body.append("file", file, file.name);
+  const form = await request.formData();
+  const file = form.get("file");
+  if (!(file instanceof File)) {
+    return NextResponse.json({ error: "Choose a file to upload." }, { status: 400 });
+  }
 
-  const res = await fetch("https://uploads.pinata.cloud/v3/files", {
+  const isMetadata = file.type === "application/json";
+  if (!isMetadata && !ALLOWED_IMAGE_TYPES.has(file.type)) {
+    return NextResponse.json({ error: "Upload a PNG, JPEG, WebP, GIF image, or NFT metadata JSON file." }, { status: 415 });
+  }
+
+  const sizeLimit = isMetadata ? MAX_METADATA_SIZE : MAX_IMAGE_SIZE;
+  if (file.size === 0 || file.size > sizeLimit) {
+    const limitMb = isMetadata ? 0.064 : 8;
+    return NextResponse.json({ error: `File must be non-empty and no larger than ${limitMb} MB.` }, { status: 413 });
+  }
+
+  const pinataForm = new FormData();
+  pinataForm.append("network", "public");
+  pinataForm.append("file", file, file.name);
+
+  const response = await fetch("https://uploads.pinata.cloud/v3/files", {
     method: "POST",
-    headers: { Authorization: `Bearer ${process.env.PINATA_JWT}` },
-    body,
+    headers: { Authorization: `Bearer ${pinataJwt}` },
+    body: pinataForm,
+    cache: "no-store",
   });
 
-  // 3. Give the browser only what it needs: the CID
-  const json = await res.json();
-  if (!res.ok) return NextResponse.json(json, { status: res.status });
-  return NextResponse.json({ cid: json.data.cid });
+  if (!response.ok) {
+    return NextResponse.json({ error: `Pinata upload failed (HTTP ${response.status}).` }, { status: 502 });
+  }
+
+  const result: unknown = await response.json();
+  if (
+    typeof result !== "object" ||
+    result === null ||
+    !("data" in result) ||
+    typeof result.data !== "object" ||
+    result.data === null ||
+    !("cid" in result.data) ||
+    typeof result.data.cid !== "string"
+  ) {
+    return NextResponse.json({ error: "Pinata returned an unexpected upload response." }, { status: 502 });
+  }
+
+  return NextResponse.json({ cid: result.data.cid });
 }
