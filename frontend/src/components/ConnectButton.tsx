@@ -1,7 +1,7 @@
 "use client";
 
-import { useAccount, useConnect, useDisconnect, useEnsName } from "wagmi";
-import { mainnet } from "wagmi/chains";
+import { useAccount, useConnect, useDisconnect, useEnsName, useSwitchChain } from "wagmi";
+import { mainnet, sepolia } from "wagmi/chains";
 
 function shortAddress(address?: string) {
   return address ? `${address.slice(0, 6)}…${address.slice(-4)}` : "Wallet";
@@ -18,16 +18,31 @@ export function ConnectButton() {
   const { data: ensName } = useEnsName({ address, chainId: mainnet.id });
   const { connectors, connect, isPending, error, reset } = useConnect();
   const { disconnect } = useDisconnect();
+  const { switchChain, isPending: isSwitching, error: switchError, reset: resetSwitch } = useSwitchChain();
 
   if (isConnected) {
     return (
       <div className="wallet-connected">
-        <span className="network-label">{chain?.name ?? "Unknown network"}</span>
+        <select
+          aria-label="Wallet network"
+          className="network-select"
+          disabled={isSwitching}
+          value={chain?.id === mainnet.id || chain?.id === sepolia.id ? chain.id : ""}
+          onChange={(event) => {
+            resetSwitch();
+            switchChain({ chainId: Number(event.target.value) as typeof mainnet.id | typeof sepolia.id });
+          }}
+        >
+          <option value="" disabled>{isSwitching ? "Switching…" : "Switch network"}</option>
+          <option value={mainnet.id}>Ethereum</option>
+          <option value={sepolia.id}>Sepolia</option>
+        </select>
         <button className="wallet-button" onClick={() => disconnect()} title="Disconnect wallet">
           <span className="status-dot is-live" />
           {ensName ?? shortAddress(address)}
           <span className="wallet-action">Disconnect</span>
         </button>
+        {switchError && <p className="wallet-error" role="alert">Could not switch network. Please approve it in your wallet.</p>}
       </div>
     );
   }
