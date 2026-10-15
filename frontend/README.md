@@ -1,6 +1,6 @@
 # W3B Studio
 
-**Live app:** Not deployed yet. Vercel deployment requires project access and the server-side `PINATA_JWT`.
+**Live app:** https://web3-bridge-solidity-cohort-xv.vercel.app. The app is deployed, but uploads require a non-empty server-side `PINATA_JWT` in the Vercel project settings.
 
 W3B Studio lets a visitor connect a wallet, create an NFT, upload its image and metadata to public IPFS through Pinata, and mint it on Sepolia. The collection page loads every token and current owner from the contract, resolves owners to ENS names when available, and shows each creator-provided ETH reference value as a live USD estimate using Chainlink's Sepolia ETH/USD feed. ENS lookups read `.eth` names and public profile records from Ethereum Mainnet.
 
@@ -50,4 +50,4 @@ The RPC URLs, NFT address, and IPFS gateway are public client configuration. The
 
 ## Deploy on Vercel
 
-Import this repository into Vercel and set the project root directory to `frontend`. Add `PINATA_JWT` as a server-only environment variable; do not prefix it with `NEXT_PUBLIC_`. The app uses the deployed Sepolia collection by default, but you can override its address and the public RPC/gateway settings. Deploy the project, then replace the live-app status at the top with the Vercel URL.
+The Vercel project uses `frontend` as its root directory. Add a non-empty `PINATA_JWT` as a server-only environment variable in the project settings; do not prefix it with `NEXT_PUBLIC_`. After changing environment variables, redeploy so the production server receives them. The app uses the deployed Sepolia collection by default, but you can override its address and the public RPC/gateway settings.
