@@ -1,4 +1,3 @@
-// @ts-expect-error Next.js handles CSS imports at build time.
 import "./globals.css";
 import type { Metadata } from "next";
 import { Providers } from "./Providers";
