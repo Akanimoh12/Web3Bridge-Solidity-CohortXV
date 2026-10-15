@@ -128,20 +128,18 @@ export default function NftPage() {
 
       setStep("wallet");
       if (chainId !== sepolia.id) await switchChainAsync({ chainId: sepolia.id });
-      const { request } = await publicClient.simulateContract({
+      const mintCall = {
         address: NFT_ADDRESS,
         abi: nftAbi,
         functionName: "mint",
         args: [uri],
         account: address,
-      });
+      } as const;
+      await publicClient.simulateContract(mintCall);
+      const estimatedGas = await publicClient.estimateContractGas(mintCall);
       const hash = await writeContractAsync({
-        address: NFT_ADDRESS,
-        abi: nftAbi,
-        functionName: "mint",
-        args: [uri],
-        account: address,
-        gas: request.gas,
+        ...mintCall,
+        gas: estimatedGas + estimatedGas / 5n,
         chainId: sepolia.id,
       });
 
