@@ -6,6 +6,8 @@ import {IDiamondLoupe} from "lib/diamond-1-hardhat/contracts/interfaces/IDiamond
 import {IERC173} from "lib/diamond-1-hardhat/contracts/interfaces/IERC173.sol";
 import {IERC165} from "lib/diamond-1-hardhat/contracts/interfaces/IERC165.sol";
 import {SavingsFacet} from "./facets/SavingsFacet.sol";
+import {EmergencyFacet} from "./facets/EmergencyFacet.sol";
+import {PauseFacet} from "./facets/PauseFacet.sol";
 
 library VaultSelectors {
 
@@ -40,6 +42,16 @@ library VaultSelectors {
         s[6] = SavingsFacet.version.selector;
     }
 
+    function emergency() internal pure returns (bytes4[] memory s) {
+        s = new bytes4[](1);
+        s[0] = EmergencyFacet.emergencyWithdraw.selector;
+    }
 
+    function pause() internal pure returns (bytes4[] memory s) {
+        s = new bytes4[](3);
+        s[0] = PauseFacet.pause.selector;
+        s[1] = PauseFacet.unpause.selector;
+        s[2] = PauseFacet.paused.selector;
+    }
 
 }

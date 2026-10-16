@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createPublicClient, encodeFunctionData, http } from "viem";
+import { createPublicClient, http } from "viem";
 import { sepolia } from "viem/chains";
 import { entryPoint07Address } from "viem/account-abstraction";
 import { createSmartAccountClient } from "permissionless";
@@ -34,6 +34,7 @@ export default function SmartAccountPage() {
   const [two, setTwo] = useState(false);
   const [status, setStatus] = useState("");
   const [txHash, setTxHash] = useState("");
+  const [userOpHash, setUserOpHash] = useState("");
 
   // Step 1: work out the smart account's address. It exists BEFORE the contract is deployed.
   async function showAccount() {
@@ -52,6 +53,8 @@ export default function SmartAccountPage() {
   async function mintFromSmartAccount() {
     try {
       await switchChainAsync({ chainId: sepolia.id });
+      const nftAddress = NFT_ADDRESS;
+      if (!nftAddress) throw new Error("The Sepolia NFT contract address is not configured.");
       const account = await getSmartAccount();
 
       // 4. The bundler and the paymaster, reached through OUR server route
@@ -71,8 +74,10 @@ export default function SmartAccountPage() {
 
       // 6. The calls: mint once, or twice (batching: two actions, one signature)
       const mintCall = {
-        to: NFT_ADDRESS,
-        data: encodeFunctionData({ abi: nftAbi, functionName: "mint", args: [uri] }),
+        to: nftAddress,
+        abi: nftAbi,
+        functionName: "mint",
+        args: [uri] as const,
       };
       const calls = two ? [mintCall, mintCall] : [mintCall];
 
@@ -82,6 +87,7 @@ export default function SmartAccountPage() {
       setStatus(`Sent to the bundler. UserOp hash: ${userOpHash}. Waiting…`);
       const receipt = await smartAccountClient.waitForUserOperationReceipt({ hash: userOpHash });
 
+      setUserOpHash(userOpHash);
       setTxHash(receipt.receipt.transactionHash);
       setDeployed(true);
       setStatus(receipt.success ? "Done ✅" : "The UserOperation was included but failed ❌");
@@ -131,9 +137,12 @@ export default function SmartAccountPage() {
         </button>
         <p className="break-all text-sm">{status}</p>
         {txHash && (
-          <a className="text-sm underline" href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank">
-            See the transaction on Etherscan: who sent it, and to which contract?
-          </a>
+          <div className="space-y-1 text-sm">
+            <p className="break-all">UserOperation hash: {userOpHash}</p>
+            <a className="underline" href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noreferrer">
+              See the bundled UserOperation transaction on Etherscan
+            </a>
+          </div>
         )}
       </section>
     </div>

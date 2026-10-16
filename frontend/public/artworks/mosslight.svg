@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 810" fill="none">
+  <defs>
+    <linearGradient id="forest" x1="65" y1="33" x2="625" y2="786" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#152C2B"/>
+      <stop offset=".55" stop-color="#36574A"/>
+      <stop offset="1" stop-color="#A1A47D"/>
+    </linearGradient>
+    <radialGradient id="light" cx="0" cy="0" r="1" gradientTransform="matrix(0 390 -255 0 356 325)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F5D99D" stop-opacity=".88"/>
+      <stop offset="1" stop-color="#F5D99D" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <path fill="url(#forest)" d="M0 0h720v810H0z"/>
+  <path d="m352 72 166 413H408l174 325H145l164-323H194L352 72Z" fill="url(#light)"/>
+  <path d="M353 188v475" stroke="#D8D0A4" stroke-width="8" stroke-linecap="round"/>
+  <path d="M352 370c-70-111-135-148-194-112 38 79 102 129 194 150M354 454c71-104 137-131 197-80-47 74-111 112-197 116M353 553c-58-79-112-100-162-64 34 60 88 92 162 97" fill="#759174" stroke="#BDD0A5" stroke-opacity=".55" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M158 260c67 15 131 64 194 148M551 372c-69 17-135 59-198 126M191 489c58 16 112 47 163 94" stroke="#E2D5A9" stroke-opacity=".65" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="200" cy="168" r="5" fill="#F3E4BC"/><circle cx="541" cy="220" r="4" fill="#F3E4BC"/>
+  <circle cx="579" cy="604" r="5" fill="#F3E4BC"/><circle cx="116" cy="663" r="4" fill="#F3E4BC"/>
+  <path d="M78 711c104-36 198-31 284 15 79 42 168 42 268 0" stroke="#E3D6AE" stroke-opacity=".45" stroke-width="3"/>
+</svg>

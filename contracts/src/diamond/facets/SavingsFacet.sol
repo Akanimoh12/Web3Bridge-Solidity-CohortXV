@@ -14,7 +14,7 @@ contract SavingsFacet is VaultBase {
 
     // User Functions
 
-    function deposit(uint256 lockDuration) public payable {
+    function deposit(uint256 lockDuration) public payable whenNotPaused {
         LibVault.VaultStorage storage vs = LibVault.vaultStorage();
 
         if (msg.value == 0) revert ZeroAmount();
@@ -31,7 +31,7 @@ contract SavingsFacet is VaultBase {
         emit Deposit(msg.sender, msg.value, s.unlockTime);
     }
 
-    function withdraw() public virtual nonReentrant {
+    function withdraw() public virtual nonReentrant whenNotPaused {
         LibVault.VaultStorage storage vs = LibVault.vaultStorage();
         LibVault.Savings storage s = vs.savings[msg.sender];
 

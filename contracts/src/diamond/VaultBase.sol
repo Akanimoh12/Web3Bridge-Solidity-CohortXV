@@ -9,6 +9,7 @@ abstract contract VaultBase {
    error TransferFailed();
    error NothingSaved();
    error ReentrantCall();
+   error Paused();
 
    modifier onlyOwner() {
       LibDiamond.enforceIsContractOwner();
@@ -25,6 +26,10 @@ abstract contract VaultBase {
       vs.reentrancyLock = 0;
    }
 
-}
+   modifier whenNotPaused() {
+      if (LibVault.vaultStorage().paused) revert Paused();
+      _;
+   }
 
+}
 

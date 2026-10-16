@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 810" fill="none">
+  <defs>
+    <linearGradient id="paper" x1="70" y1="10" x2="642" y2="790" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E9E2D2"/>
+      <stop offset="1" stop-color="#B8BCAF"/>
+    </linearGradient>
+    <linearGradient id="moon" x1="283" y1="190" x2="494" y2="462" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8F1DF"/>
+      <stop offset="1" stop-color="#C6C5B5"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#paper)" d="M0 0h720v810H0z"/>
+  <path d="M76 681h568M107 713h506" stroke="#667063" stroke-opacity=".36" stroke-width="2"/>
+  <circle cx="390" cy="317" r="145" fill="url(#moon)"/>
+  <circle cx="445" cy="266" r="145" fill="#D2D0C1"/>
+  <circle cx="445" cy="266" r="145" stroke="#F9F4E7" stroke-opacity=".85" stroke-width="2"/>
+  <circle cx="473" cy="219" r="15" fill="#B3B3A6" fill-opacity=".52"/>
+  <circle cx="410" cy="284" r="25" fill="#B3B3A6" fill-opacity=".32"/>
+  <circle cx="494" cy="319" r="9" fill="#A4A99A" fill-opacity=".5"/>
+  <path d="M166 579V431c0-36 29-65 65-65s65 29 65 65v148" stroke="#5E6D60" stroke-width="3"/>
+  <path d="M190 579V433c0-23 18-41 41-41s41 18 41 41v146" fill="#87927D" fill-opacity=".52"/>
+  <path d="M157 580h147" stroke="#5E6D60" stroke-width="4"/>
+  <path d="M357 594c46-60 94-86 143-77 35 7 64 32 87 77" stroke="#8C7469" stroke-width="3"/>
+  <path d="M373 594c39-39 78-57 118-51 26 4 50 21 72 51" fill="#C28D72" fill-opacity=".45"/>
+  <circle cx="174" cy="209" r="4" fill="#6B7468"/><circle cx="574" cy="471" r="4" fill="#6B7468"/>
+  <circle cx="235" cy="160" r="2.5" fill="#6B7468"/><circle cx="547" cy="170" r="3" fill="#6B7468"/>
+  <path d="M359 105v27m-13-13h27" stroke="#788071" stroke-width="2"/>
+</svg>

@@ -1,24 +1,33 @@
 import Link from "next/link";
 import { ConnectButton } from "./ConnectButton";
+import { PriceTicker } from "./PriceTicker";
 
 const links = [
-  ["/", "Home"],
-  ["/ens", "ENS"],
-  ["/nft", "IPFS NFT"],
-  ["/aa", "Smart Account"],
+  ["/", "Studio"],
+  ["/ens", "ENS lookup"],
+  ["/nft", "Mint & gallery"],
+  ["/aa", "Smart account"],
+  ["/notifications", "Live alerts"],
 ];
 
 export function Nav() {
   return (
-    <header className="flex flex-wrap items-center justify-between gap-3 border-b p-4">
-      <nav className="flex flex-wrap gap-4 text-sm">
-        {links.map(([href, label]) => (
-          <Link key={href} href={href} className="hover:underline">
-            {label}
-          </Link>
-        ))}
-      </nav>
-      <ConnectButton />
+    <header className="site-header">
+      <div className="nav-main">
+        <Link className="brand" href="/">
+          <span className="brand-mark">W</span>
+          <span>W3B <span className="brand-light">STUDIO</span></span>
+        </Link>
+        <nav className="nav-links" aria-label="Main navigation">
+          {links.map(([href, label]) => (
+            <Link key={href} href={href} className="nav-link">
+              {label}
+            </Link>
+          ))}
+        </nav>
+        <PriceTicker />
+        <ConnectButton />
+      </div>
     </header>
   );
 }

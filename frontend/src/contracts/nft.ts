@@ -1,11 +1,17 @@
-// The ClassNFT contract, already deployed on Sepolia by the instructor
-export const NFT_ADDRESS = process.env.NEXT_PUBLIC_NFT_ADDRESS as `0x${string}`;
+import { isAddress, zeroAddress, type Address } from "viem";
 
-// Only the parts of the ABI we use: two functions to read, one to write, one event
+const configuredAddress = process.env.NEXT_PUBLIC_NFT_ADDRESS;
+const deployedAddress: Address = "0x089301ED48D1f2532Ddbb06b1069E194009DF052";
+const collectionAddress = configuredAddress ?? deployedAddress;
+export const NFT_ADDRESS: Address | undefined =
+  isAddress(collectionAddress) ? collectionAddress : undefined;
+export const NFT_CONTRACT_ADDRESS = NFT_ADDRESS ?? zeroAddress;
+
 export const nftAbi = [
   { type: "function", name: "mint", stateMutability: "nonpayable", inputs: [{ name: "uri", type: "string" }], outputs: [{ name: "tokenId", type: "uint256" }] },
   { type: "function", name: "tokenURI", stateMutability: "view", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [{ type: "string" }] },
   { type: "function", name: "ownerOf", stateMutability: "view", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [{ type: "address" }] },
+  { type: "function", name: "totalMinted", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
   {
     type: "event",
     name: "Minted",
@@ -17,5 +23,11 @@ export const nftAbi = [
   },
 ] as const;
 
-// Browsers cannot open ipfs:// links. A gateway is a normal website that fetches IPFS files for us.
-export const ipfsToHttp = (uri: string) => uri.replace("ipfs://", "https://ipfs.io/ipfs/");
+export function ipfsToHttp(uri: string): string {
+  if (uri.startsWith("ipfs://")) {
+    const cidAndPath = uri.slice("ipfs://".length).replace(/^ipfs\//, "");
+    const gateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY || "https://gateway.pinata.cloud/ipfs";
+    return `${gateway.replace(/\/$/, "")}/${cidAndPath}`;
+  }
+  return uri;
+}
