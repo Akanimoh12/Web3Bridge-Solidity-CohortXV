@@ -129,6 +129,37 @@ export async function POST(request: Request) {
     return fail("Smart account submissions are disabled", 403);
   }
 
+
+  // Apply the configured policy to every paymaster request.
+  const policyMethods = [
+    "pm_sponsorUserOperation",
+    "pm_getPaymasterData",
+    "pm_getPaymasterStubData",
+  ];
+
+  if (policyMethods.includes(rpc.method as string)) {
+    const policyId = process.env.PIMLICO_POLICY_ID;
+
+    if (!policyId) {
+      return fail("Sponsorship policy not configured", 503);
+    }
+
+    const params = rpc.params as unknown[];
+    const contextIndex =
+      rpc.method === "pm_sponsorUserOperation" ? 2 : 3;
+
+    if (params.length < contextIndex) {
+      return fail("Invalid sponsorship parameters", 400);
+    }
+
+    rpc.params = [
+      ...params.slice(0, contextIndex),
+      { sponsorshipPolicyId: policyId },
+    ];
+
+    body = JSON.stringify(rpc);
+  }
+
   const url = new URL(
     "https://api.pimlico.io/v2/11155111/rpc"
   );
