@@ -1,11 +1,12 @@
-
 import Link from "next/link";
 import { ConnectButton } from "./ConnectButton";
 
 const links = [
   { href: "/", label: "Home" },
   { href: "/ens", label: "Explore ENS" },
-  { href: "/nft", label: "Create NFT" },
+  { href: "/nft", label: "NFT Studio" },
+  { href: "/aa", label: "Smart Mint" },
+  { href: "/notifications", label: "Activity" },
 ];
 
 export function Nav() {
