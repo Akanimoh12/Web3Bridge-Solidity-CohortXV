@@ -6,6 +6,8 @@ const links = [
   ["/", "Studio"],
   ["/ens", "ENS lookup"],
   ["/nft", "Mint & gallery"],
+  ["/aa", "Smart account"],
+  ["/notifications", "Live alerts"],
 ];
 
 export function Nav() {

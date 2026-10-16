@@ -4,6 +4,14 @@
 
 W3B Studio lets a visitor connect a wallet, create an NFT, upload its image and metadata to public IPFS through Pinata, and mint it on Sepolia. The collection page loads every token and current owner from the contract, resolves owners to ENS names when available, and shows each creator-provided ETH reference value as a live USD estimate using Chainlink's Sepolia ETH/USD feed. ENS lookups read `.eth` names and public profile records from Ethereum Mainnet.
 
+## Day 4: smart account and live alerts
+
+- Open **Smart account** in the navigation, connect a Sepolia wallet, and mint from the counterfactual smart account. Enable **Mint two in ONE UserOperation** to batch two calls into the same UserOperation. The connected wallet signs the operation; Pimlico's paymaster is asked to sponsor its gas. Sponsorship depends on the Pimlico project/policy and can fall back to the account's EntryPoint deposit.
+- Open **Live alerts** and allow browser notifications. It listens for this collection's `Minted` events, displays the recipient's ENS name when one exists (otherwise the shortened address), and shows a browser notification for each mint while the page is open.
+- After submitting a successful UserOperation, use the app's Etherscan link to the bundled transaction and add that link here: **Example UserOperation:** _add the Sepolia Etherscan transaction link after sending one_. In the bundled transaction, **From** is the bundler, **To** is the EntryPoint, and **Pimlico's paymaster pays gas** when sponsorship is accepted. The smart account is the sender of the inner calls to ClassNFT.
+
+The alert page only listens while it is open because its event watcher runs in the browser. A real product would run a persistent backend/indexer or managed event listener, store the last processed block, and deliver alerts through push notifications or another durable channel. It would also handle retries and deduplicate events so restarts do not lose or repeat notifications.
+
 ## Contracts
 
 - [ClassNFT](https://sepolia.etherscan.io/address/0x089301ED48D1f2532Ddbb06b1069E194009DF052) — ERC-721 collection deployed on Sepolia.
@@ -23,7 +31,7 @@ npm ci
 npm run dev
 ```
 
-Open http://localhost:3000. Set the environment variables below in `frontend/.env.local` or the Vercel project's environment settings before minting. The NFT address must be the Sepolia deployment address; wallets need Sepolia ETH for mint transactions.
+Open http://localhost:3000. Set public configuration and `PINATA_JWT` in `frontend/.env.local` or Vercel settings before minting. Set `PIMLICO_API_KEY` only in the Vercel project's server-side environment variables; do not put it in a local file or client configuration. The NFT address must be the Sepolia deployment address; wallets need Sepolia ETH for regular mint transactions.
 
 To deploy the collection yourself from the repository root:
 
@@ -47,9 +55,10 @@ The app defaults to the deployed collection above. Set `NEXT_PUBLIC_NFT_ADDRESS`
 - `NEXT_PUBLIC_MAINNET_RPC_URL`
 - `NEXT_PUBLIC_IPFS_GATEWAY`
 - `NEXT_PUBLIC_NFT_ADDRESS` (optional collection override)
+- `PIMLICO_API_KEY` (required for smart-account UserOperations; server-side only)
 
-The RPC URLs, NFT address, and IPFS gateway are public client configuration. The Pinata bearer JWT is secret and must be configured only as a server-side Vercel environment variable. Pinata requires a bearer JWT to accept uploads, so the browser sends files to `/api/upload` and only that server route attaches the secret. If the key started with `NEXT_PUBLIC_`, Next.js would include it in downloadable client code, letting anyone extract it and upload to your Pinata account. The route rejects unsupported files and oversized uploads, and the key is never returned to the browser.
+The RPC URLs, NFT address, and IPFS gateway are public client configuration. `PINATA_JWT` and `PIMLICO_API_KEY` are secrets and must be configured only as server-side Vercel environment variables; never use a `NEXT_PUBLIC_` prefix. The browser sends uploads to `/api/upload`, while smart-account requests go through `/api/bundler`; only those server routes attach the respective secrets. If either key started with `NEXT_PUBLIC_`, Next.js would include it in downloadable client code.
 
 ## Deploy on Vercel
 
-The Vercel project uses `frontend` as its root directory. Add a non-empty `PINATA_JWT` as a server-only environment variable in the project settings; do not prefix it with `NEXT_PUBLIC_`. After changing environment variables, redeploy so the production server receives them. The app uses the deployed Sepolia collection by default, but you can override its address and the public RPC/gateway settings.
+The Vercel project uses `frontend` as its root directory. Add non-empty `PINATA_JWT` and `PIMLICO_API_KEY` values as server-only environment variables in the project settings; do not prefix them with `NEXT_PUBLIC_`. After changing environment variables, redeploy so the production server receives them. The app uses the deployed Sepolia collection by default, but you can override its address and the public RPC/gateway settings.
