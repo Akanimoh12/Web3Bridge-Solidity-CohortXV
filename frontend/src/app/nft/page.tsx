@@ -84,13 +84,23 @@ export default function NftPage() {
   const [imageError, setImageError] = useState("");
   const [step, setStep] = useState<MintStep>("idle");
   const [mintError, setMintError] = useState("");
+  const [mintNotice, setMintNotice] = useState("");
+  const [submittedHash, setSubmittedHash] = useState<Hash | null>(null);
+  const [submittedMetadata, setSubmittedMetadata] = useState<NftMetadata | null>(null);
   const [result, setResult] = useState<Result | null>(null);
-  const [lookupId, setLookupId] = useState("");
+  const [lookupId, setLookupId] = useState("0");
   const [lookupStatus, setLookupStatus] = useState("");
   const [lookupResult, setLookupResult] = useState<Result | null>(null);
 
   const previewUrl = useMemo(() => (image ? URL.createObjectURL(image) : ""), [image]);
   useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
+  useEffect(() => {
+    const savedHash = window.localStorage.getItem("profile-card-pending-mint") as Hash | null;
+    if (savedHash) {
+      setSubmittedHash(savedHash);
+      setMintNotice("A previous mint was submitted. Check its confirmation below before minting again.");
+    }
+  }, []);
 
   const activeStep = step === "confirming" ? "wallet" : step;
   const activeIndex = steps.findIndex((item) => item.key === activeStep);
@@ -113,9 +123,43 @@ export default function NftPage() {
     setImage(file);
   }
 
+  async function confirmMint(hash: Hash, knownMetadata?: NftMetadata | null) {
+    if (!publicClient) return;
+    setStep("confirming");
+    setMintError("");
+
+    try {
+      const receipt = await publicClient.waitForTransactionReceipt({ hash, confirmations: 1, timeout: 120_000 });
+      if (receipt.status !== "success") {
+        window.localStorage.removeItem("profile-card-pending-mint");
+        setSubmittedHash(null);
+        setStep("idle");
+        setMintError("The transaction was confirmed but reverted. No NFT was created.");
+        return;
+      }
+
+      const [mintedEvent] = parseEventLogs({ abi: nftAbi, logs: receipt.logs, eventName: "Minted" });
+      if (!mintedEvent) throw new Error("The confirmed transaction did not contain a Minted event.");
+
+      const { tokenId, uri, to } = mintedEvent.args;
+      const metadata = knownMetadata ?? await fetchNftMetadata(uri);
+      setResult({ tokenId: tokenId.toString(), uri, owner: to, metadata, hash });
+      setLookupId(tokenId.toString());
+      setSubmittedHash(null);
+      setSubmittedMetadata(null);
+      setMintNotice("");
+      window.localStorage.removeItem("profile-card-pending-mint");
+      setStep("complete");
+    } catch {
+      setStep("idle");
+      setMintNotice("Your transaction was submitted. Use Check confirmation below; do not mint again.");
+    }
+  }
+
   async function mint(event: FormEvent) {
     event.preventDefault();
     setMintError("");
+    setMintNotice("");
     setResult(null);
 
     if (!isConnected || !address) return setMintError("Connect your wallet before minting.");
@@ -124,7 +168,7 @@ export default function NftPage() {
 
     try {
       setStep("uploading");
-      const uri = await uploadNft(image, name.trim(), bio.trim());
+      const { uri, metadata } = await uploadNft(image, name.trim(), bio.trim());
 
       setStep("wallet");
       if (chainId !== sepolia.id) await switchChainAsync({ chainId: sepolia.id });
@@ -142,24 +186,11 @@ export default function NftPage() {
         gas: estimatedGas + estimatedGas / 5n,
         chainId: sepolia.id,
       });
-
-      setStep("confirming");
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
-      if (receipt.status !== "success") throw new Error("The mint transaction reverted.");
-
-      const [mintedEvent] = parseEventLogs({ abi: nftAbi, logs: receipt.logs, eventName: "Minted" });
-      if (!mintedEvent) throw new Error("The mint event was not found in the receipt.");
-
-      const tokenId = mintedEvent.args.tokenId;
-      const [uriFromChain, owner] = await Promise.all([
-        publicClient.readContract({ address: NFT_ADDRESS, abi: nftAbi, functionName: "tokenURI", args: [tokenId] }),
-        publicClient.readContract({ address: NFT_ADDRESS, abi: nftAbi, functionName: "ownerOf", args: [tokenId] }),
-      ]);
-      const metadata = await fetchNftMetadata(uriFromChain);
-
-      setResult({ tokenId: tokenId.toString(), uri: uriFromChain, owner, metadata, hash });
-      setLookupId(tokenId.toString());
-      setStep("complete");
+      setSubmittedHash(hash);
+      setSubmittedMetadata(metadata);
+      setMintNotice("Transaction submitted. Waiting for Sepolia confirmation…");
+      window.localStorage.setItem("profile-card-pending-mint", hash);
+      await confirmMint(hash, metadata);
     } catch (error) {
       setStep("idle");
       setMintError(friendlyError(error));
@@ -175,15 +206,28 @@ export default function NftPage() {
     try {
       setLookupStatus("Reading the token from Sepolia…");
       const tokenId = BigInt(lookupId);
-      const [uri, owner] = await Promise.all([
-        publicClient.readContract({ address: NFT_ADDRESS, abi: nftAbi, functionName: "tokenURI", args: [tokenId] }),
-        publicClient.readContract({ address: NFT_ADDRESS, abi: nftAbi, functionName: "ownerOf", args: [tokenId] }),
-      ]);
-      const metadata = await fetchNftMetadata(uri);
+      let uri: string;
+      let owner: Address;
+      try {
+        [uri, owner] = await Promise.all([
+          publicClient.readContract({ address: NFT_ADDRESS, abi: nftAbi, functionName: "tokenURI", args: [tokenId] }),
+          publicClient.readContract({ address: NFT_ADDRESS, abi: nftAbi, functionName: "ownerOf", args: [tokenId] }),
+        ]);
+      } catch {
+        setLookupStatus(`Token #${lookupId} was not found on the Sepolia contract.`);
+        return;
+      }
+      let metadata: NftMetadata;
+      try {
+        metadata = await fetchNftMetadata(uri);
+      } catch {
+        setLookupStatus(`Token #${lookupId} exists, but its IPFS metadata is unavailable.`);
+        return;
+      }
       setLookupResult({ tokenId: lookupId, uri, owner, metadata });
       setLookupStatus("");
     } catch {
-      setLookupStatus("That token was not found, or its IPFS metadata is not available yet.");
+      setLookupStatus("The token lookup could not be completed. Please try again.");
     }
   }
 
@@ -246,13 +290,25 @@ export default function NftPage() {
             <div className="mint-actions">
               {!isConnected && <p>Connect your wallet in the header to mint.</p>}
               {isConnected && chainId !== sepolia.id && <p>Your wallet will ask to switch to Sepolia before minting.</p>}
-              <button className="primary-button mint-button" disabled={!isConnected || !image || !name.trim() || !bio.trim() || isBusy}>
+              <button className="primary-button mint-button" disabled={!isConnected || !image || !name.trim() || !bio.trim() || isBusy || Boolean(submittedHash)}>
                 {step === "uploading" && "Uploading to IPFS…"}
                 {step === "wallet" && "Confirm in your wallet…"}
                 {step === "confirming" && "Waiting for confirmation…"}
                 {(step === "idle" || step === "complete") && "Upload and mint profile NFT"}
               </button>
             </div>
+            {submittedHash && !result && (
+              <div className="submitted-box" role="status">
+                <strong>Mint transaction submitted</strong>
+                <p>{mintNotice}</p>
+                <div className="submitted-actions">
+                  <button className="secondary-button" type="button" disabled={step === "confirming"} onClick={() => confirmMint(submittedHash, submittedMetadata)}>
+                    {step === "confirming" ? "Checking…" : "Check confirmation"}
+                  </button>
+                  <a href={`https://sepolia.etherscan.io/tx/${submittedHash}`} target="_blank" rel="noreferrer">View on Etherscan ↗</a>
+                </div>
+              </div>
+            )}
             {mintError && <div className="error-box" role="alert"><strong>Mint not completed</strong><p>{mintError}</p></div>}
           </form>
         </section>

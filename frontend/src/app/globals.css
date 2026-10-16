@@ -179,6 +179,10 @@ textarea.text-field { resize: vertical; }
 .error-box { background: var(--brick-soft); color: #6e2b25; }
 .empty-box { background: #eee7da; color: #554b3d; }
 .error-box p, .empty-box p { margin: 4px 0 0; }
+.submitted-box { padding: 17px 18px; border-radius: 12px; background: var(--leaf-soft); color: var(--leaf-dark); }
+.submitted-box p { margin: 4px 0 14px; }
+.submitted-actions { display: flex; align-items: center; gap: 14px; }
+.submitted-actions a { color: var(--leaf-dark); font-weight: 700; }
 
 .profile-skeleton { display: grid; grid-template-columns: 82px 1fr; gap: 18px; padding: 26px 0; }
 .profile-skeleton > span { width: 82px; height: 82px; border-radius: 50%; background: #e7dfd1; }
