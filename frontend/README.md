@@ -44,6 +44,25 @@ An end-to-end decentralized application combining **ENS identity resolution**, *
 
 ---
 
+## ⚡ Day 4 Assignment: Gasless Smart Account & Live Alerts
+
+### 1. UserOperation Details & On-Chain Breakdown
+- **Etherscan Transaction:** [https://sepolia.etherscan.io/tx/0x9014b7a7f09a2a5af8d320830f6f9ca2f956716b55783a5c82f4c9ea19887244](https://sepolia.etherscan.io/tx/0x9014b7a7f09a2a5af8d320830f6f9ca2f956716b55783a5c82f4c9ea19887244)
+- **UserOp Hash (JiffyScan):** [`0x126d6eedf44fee08db3bff3a49a1b9ec55e5bff87daffe7819076eea4d74e716`](https://jiffyscan.xyz/userOpHash/0x126d6eedf44fee08db3bff3a49a1b9ec55e5bff87daffe7819076eea4d74e716)
+- **Who is in the `From` field?**
+  The Pimlico Bundler / Relayer address (`0x4337016838785634c63fce393bfc6222564436c4`). In ERC-4337, the end-user never broadcasts directly to the Ethereum mempool; instead, the Bundler packages the signed `UserOperation` into a standard on-chain transaction calling `handleOps()`.
+- **Who is in the `To` field?**
+  The canonical ERC-4337 **EntryPoint v0.7** contract (`0x0000000071727de22e5e9d8baf0edac6f37da032`). The EntryPoint coordinates user verification, ensures the paymaster pre-funds the execution, and executes the batch calls to the user's Smart Account (`0x79e66B0475844cE2550e848e8d1a708B41205Fe5`), which then mints the tokens on the `ClassNFT` contract.
+- **Who paid the gas?**
+  The **Pimlico Verifying Paymaster** (`0x777777777777AeC03fd955926DbF81597e66834C`). The bundler initially pays the upfront transaction gas, and the EntryPoint immediately refunds the bundler from the Paymaster's deposited ETH balance. The user's account paid 0 ETH.
+
+### 2. Architecture Reflection: Live Alerts
+> **Question:** *Your alert page only works while it's open. What would a real product do instead?*
+
+A production-grade product would decouple event ingestion from client browsers by using an off-chain indexing service (such as Envio, The Graph Subgraphs, or Alchemy/Tenderly Webhooks) coupled with a 24/7 backend worker or serverless queue. When the smart contract emits a `Minted` event, the backend processes the transaction and dispatches notifications via persistent delivery rails such as Web Push (Service Workers), Push Protocol (EPNS), or messaging bots (Telegram, Discord, Email)—ensuring users receive immediate alerts even when their devices are locked or the browser tab is closed.
+
+---
+
 ## 🔒 Security: Pinata Key & Server Route
 
 ### Why is the Pinata key in a server route, and what would happen if it started with `NEXT_PUBLIC_`?
@@ -123,7 +142,8 @@ NEXT_PUBLIC_MAINNET_RPC_URL=
 2. In the [Vercel Dashboard](https://vercel.com/dashboard), click **Add New Project** and import this repository.
 3. Set the **Root Directory** to `frontend`.
 4. Under **Environment Variables**, add:
-   - `PINATA_JWT`: Your Pinata API JWT token.
+   - `PINATA_JWT`: Your Pinata API JWT token (server-only).
+   - `PIMLICO_API_KEY`: Your Pimlico API Key for ERC-4337 bundler & paymaster (server-only).
    - `NEXT_PUBLIC_NFT_ADDRESS`: The deployed Sepolia ClassNFT address.
    - `NEXT_PUBLIC_SEPOLIA_RPC_URL` (optional).
    - `NEXT_PUBLIC_MAINNET_RPC_URL` (optional).
