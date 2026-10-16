@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BridgeID
 
-## Getting Started
+BridgeID is a Web3 identity dApp built for Web3Bridge Solidity Cohort XV, Day 3.
 
-First, run the development server:
+Users can explore ENS profiles, view Ethereum wallet balances in USD using a Chainlink price feed, and mint NFTs with images and metadata stored on IPFS through Pinata.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Live application
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Vercel: https://bridgeid-web3bridge.vercel.app/
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- ENS name resolution, avatars and profile records
+- Ethereum Mainnet wallet balances
+- Chainlink ETH/USD price from Sepolia, with automatic refresh and update age
+- Wallet connection and NFT minting on Sepolia
+- Server-side Pinata uploads
+- NFT metadata and image retrieval from IPFS
 
-## Learn More
+## Contracts
 
-To learn more about Next.js, take a look at the following resources:
+ClassNFT on Ethereum Sepolia:
+https://sepolia.etherscan.io/address/0xCcBb310c30Df589c519F6e22c5ac7C3a45F607A1
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Chainlink ETH/USD feed on Sepolia:
+https://sepolia.etherscan.io/address/0x694AA1769357215DE4FAC081bf1f309aDC325306
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Run locally
 
-## Deploy on Vercel
+From the frontend directory:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Run `npm ci`.
+2. Create `.env.local` and configure the environment variables listed below.
+3. Run `npm run dev`.
+4. Open http://localhost:3000.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Environment variables
+
+- NEXT_PUBLIC_SEPOLIA_RPC_URL
+- NEXT_PUBLIC_MAINNET_RPC_URL
+- NEXT_PUBLIC_NFT_ADDRESS
+- PINATA_JWT
+
+Never commit actual environment variable values.
+
+## Why the Pinata key stays on the server
+
+The Pinata JWT is kept in a server route because it grants permission to upload files to our Pinata account. The browser sends files to our API, and the server authenticates with Pinata using the secret key. If the key started with NEXT_PUBLIC_, Next.js could expose it in the browser's JavaScript bundle. Someone could then copy it and abuse our Pinata storage or API permissions.
+
+## Security
+
+The upload API validates file types, image signatures and upload sizes. Production deployments also require abuse protection and rate limiting.
+
+## Network information
+
+ENS and wallet balance reads use Ethereum Mainnet.
+NFT minting and the Chainlink reference feed use Ethereum Sepolia.
+Sepolia ETH is test ETH and has no real monetary value.
