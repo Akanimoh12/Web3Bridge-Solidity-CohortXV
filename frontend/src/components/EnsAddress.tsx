@@ -47,13 +47,13 @@ export function EnsAddress({ address, showAvatar = true, className = "" }: EnsAd
       )}
 
       {isLoading ? (
-        <span className="text-neutral-400">resolving…</span>
+        <span className="text-neutral-400 animate-pulse text-[11px]">resolving…</span>
       ) : ensName ? (
-        <span className="font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+        <span className="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200/80 text-[11px]">
           {ensName}
         </span>
       ) : (
-        <span className="text-neutral-800" title={address}>
+        <span className="text-neutral-800 font-medium" title={address}>
           {formatted0x}
         </span>
       )}

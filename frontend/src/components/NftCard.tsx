@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useReadContract } from "wagmi";
 import { sepolia } from "wagmi/chains";
-import { Image as ImageIcon, ExternalLink } from "lucide-react";
+import { Image as ImageIcon, ArrowUpRight } from "lucide-react";
 import { NFT_ADDRESS, nftAbi, ipfsToHttp } from "@/contracts/nft";
 import { EnsAddress } from "./EnsAddress";
 import { useChainlinkPrice } from "@/hooks/useChainlinkPrice";
@@ -79,73 +79,98 @@ export function NftCard({ tokenId }: NftCardProps) {
   const imageUrl = metadata?.image ? ipfsToHttp(metadata.image) : null;
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm transition hover:shadow-md hover:border-blue-300">
-      <div className="relative aspect-square w-full bg-neutral-100 flex items-center justify-center overflow-hidden">
+    <div className="group flex flex-col overflow-hidden rounded-3xl border border-neutral-200/90 bg-white shadow-[0_4px_20px_rgb(0,0,0,0.03)] transition-all duration-300 hover:border-blue-400 hover:shadow-xl">
+      {/* Artwork Canvas */}
+      <div className="relative aspect-square w-full bg-neutral-100/70 flex items-center justify-center overflow-hidden">
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imageUrl}
             alt={metadata?.name || `Token #${tokenId.toString()}`}
-            className="h-full w-full object-cover transition duration-300 hover:scale-105"
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = "https://placehold.co/400x400/2563eb/ffffff?text=IPFS+Image";
+              (e.target as HTMLImageElement).src =
+                "https://placehold.co/400x400/2563eb/ffffff?text=IPFS+Image";
             }}
           />
         ) : loadingMeta ? (
-          <div className="text-xs text-blue-600 animate-pulse font-medium">Loading from IPFS…</div>
+          <div className="text-xs text-blue-600 animate-pulse font-semibold">
+            Fetching IPFS…
+          </div>
         ) : metaError ? (
-          <div className="text-xs text-neutral-400 p-2 text-center">Metadata on IPFS</div>
+          <div className="text-xs text-neutral-400 p-2 text-center">IPFS Pin Active</div>
         ) : (
-          <ImageIcon className="h-8 w-8 text-blue-300" />
+          <ImageIcon className="h-10 w-10 text-neutral-300" />
         )}
-        <span className="absolute top-2 right-2 rounded-full bg-black/75 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">
-          #{tokenId.toString()}
-        </span>
+
+        {/* Top Badges */}
+        <div className="absolute top-3 left-3">
+          <span className="rounded-full bg-black/80 backdrop-blur-md px-2.5 py-1 text-[10px] font-extrabold text-white shadow-xs">
+            #{tokenId.toString()}
+          </span>
+        </div>
+
+        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition duration-200">
+          <span className="rounded-full bg-white/90 backdrop-blur-md px-2 py-0.5 text-[10px] font-bold text-blue-700 shadow-xs">
+            Sepolia
+          </span>
+        </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-4 justify-between space-y-3">
+      {/* Card Content */}
+      <div className="flex flex-1 flex-col p-5 justify-between space-y-4">
         <div>
-          <h3 className="font-bold text-sm text-black truncate">
+          <h3 className="font-extrabold text-sm text-neutral-900 group-hover:text-blue-600 transition truncate">
             {metadata?.name || `ClassNFT #${tokenId.toString()}`}
           </h3>
-          <p className="mt-1 text-xs text-neutral-500 line-clamp-2">
-            {metadata?.description || "No description provided."}
+          <p className="mt-1 text-xs text-neutral-500 line-clamp-2 leading-relaxed">
+            {metadata?.description || "Decentralized IPFS digital artifact minted on Ethereum Sepolia."}
           </p>
         </div>
 
-        <div className="space-y-2 pt-2 border-t border-neutral-100 text-xs">
+        {/* Owner & Price Info */}
+        <div className="space-y-2 pt-3 border-t border-neutral-100 text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-neutral-500">Owner:</span>
+            <span className="text-[11px] font-medium text-neutral-400">Owner:</span>
             <EnsAddress address={owner} />
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-neutral-500">Value (0.01 ETH):</span>
-            <span className="font-semibold text-blue-700">
-              {nominalUsd ? `$${nominalUsd} USD` : "—"}
+            <span className="text-[11px] font-medium text-neutral-400">Oracle Value:</span>
+            <span className="font-bold text-neutral-900">
+              {nominalUsd ? (
+                <>
+                  <span className="text-blue-600">${nominalUsd}</span>{" "}
+                  <span className="text-[10px] text-neutral-400 font-normal">USD</span>
+                </>
+              ) : (
+                "0.01 ETH"
+              )}
             </span>
           </div>
         </div>
 
+        {/* Links bar with clean circular buttons */}
         {uri && (
-          <div className="pt-1 flex items-center justify-between text-[11px]">
+          <div className="pt-2 border-t border-neutral-100 flex items-center justify-between text-[11px]">
             <a
               href={ipfsToHttp(uri)}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-0.5 text-blue-600 hover:underline"
+              className="inline-flex items-center gap-1 font-semibold text-blue-600 hover:text-blue-800 transition"
             >
-              <span>IPFS URI</span>
-              <ExternalLink className="h-2.5 w-2.5" />
+              <span>IPFS Metadata</span>
+              <ArrowUpRight className="h-3 w-3" />
             </a>
+
             <a
               href={`https://sepolia.etherscan.io/token/${NFT_ADDRESS}?a=${tokenId.toString()}`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-0.5 text-neutral-500 hover:text-black"
+              className="inline-flex items-center gap-1 font-medium text-neutral-400 hover:text-neutral-900 transition"
             >
               <span>Etherscan</span>
-              <ExternalLink className="h-2.5 w-2.5" />
+              <ArrowUpRight className="h-3 w-3" />
             </a>
           </div>
         )}
