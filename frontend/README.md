@@ -32,6 +32,16 @@ An end-to-end decentralized application combining **ENS identity resolution**, *
    - Lists all minted NFTs in reverse chronological order with image, token ID, metadata, owner ENS name, and USD value at current ETH prices.
    - Includes a direct Token ID inspector for quick lookup.
 
+5. **ERC-4337 Account Abstraction (Gasless Batch Minting):**
+   - Connect any standard EOA wallet; the dApp automatically derives a deterministic **SimpleSmartAccount** (ERC-4337) on Sepolia via EntryPoint `v0.7`.
+   - Bundles multiple mint transactions into a **single atomic UserOperation**.
+   - Fully sponsored by **Pimlico Verifying Paymaster** via a secure server route (`/api/pimlico`), meaning users pay **0 gas** and sign once.
+
+6. **Real-Time Mint Alerts & Audio-Visual Stream:**
+   - Listens to on-chain `Minted` events via WebSocket/polling.
+   - Triggers native browser push notifications and sound alerts when new tokens are minted.
+   - Automatically reverse-resolves minter addresses to primary ENS identities live in the stream.
+
 ---
 
 ## 🔒 Security: Pinata Key & Server Route
@@ -59,6 +69,9 @@ Create a `.env.local` file inside the `frontend/` directory (or add them in your
 ```env
 # Required for IPFS uploads (Keep secret! NEVER prefix with NEXT_PUBLIC_)
 PINATA_JWT=
+
+# Required for ERC-4337 Bundler & Paymaster (Keep secret! NEVER prefix with NEXT_PUBLIC_)
+PIMLICO_API_KEY=
 
 # Required for Sepolia NFT contract interactions
 NEXT_PUBLIC_NFT_ADDRESS=

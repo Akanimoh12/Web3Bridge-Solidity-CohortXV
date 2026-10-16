@@ -45,6 +45,16 @@ export function Nav() {
           >
             ENS Lookup
           </Link>
+          <Link
+            href="/alerts"
+            className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-neutral-700 hover:text-black hover:bg-white transition"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
+            </span>
+            <span>Live Alerts</span>
+          </Link>
           <a
             href={`https://sepolia.etherscan.io/address/${NFT_ADDRESS}`}
             target="_blank"
