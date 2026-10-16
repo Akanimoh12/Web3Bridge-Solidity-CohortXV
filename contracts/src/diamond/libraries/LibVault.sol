@@ -2,8 +2,7 @@
 pragma solidity ^0.8.0;
 
 library LibVault {
-
-    // The slot where the storage of the vault 
+    // The slot where the storage of the vault
     bytes32 constant STORAGE_POSITION = keccak256("web3bridge.diamond.vault.storage");
 
     struct Savings {
@@ -17,7 +16,6 @@ library LibVault {
         uint256 minLockDuration;
         string version;
         uint256 reentrancyLock;
-
     }
 
     function vaultStorage() internal pure returns (VaultStorage storage vs) {
@@ -26,6 +24,4 @@ library LibVault {
             vs.slot := position
         }
     }
-
-
 }

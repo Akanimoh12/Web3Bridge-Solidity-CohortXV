@@ -9,7 +9,6 @@ import {IERC165} from "lib/diamond-1-hardhat/contracts/interfaces/IERC165.sol";
 import {LibVault} from "../libraries/LibVault.sol";
 
 contract VaultInit {
-
     function init(uint256 minLockDuration) external {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
@@ -18,7 +17,7 @@ contract VaultInit {
         ds.supportedInterfaces[type(IERC165).interfaceId] = true;
 
         LibVault.VaultStorage storage vs = LibVault.vaultStorage();
-        vs.minLockDuration = minLockDuration;  
+        vs.minLockDuration = minLockDuration;
         vs.version = "1.0.0";
     }
 }

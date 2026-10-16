@@ -16,10 +16,10 @@ contract VulnerableVault {
 
         balances[msg.sender] = 0;
 
-        (bool ok,) = msg.sender.call{value: amount}("");   // 1. sends the ETH
+        (bool ok,) = msg.sender.call{value: amount}(""); // 1. sends the ETH
         require(ok, "send failed");
 
-        if (!ok) revert sendFailed() ;// 2. updates the record (TOO LATE)
+        if (!ok) revert sendFailed(); // 2. updates the record (TOO LATE)
     }
 }
 
