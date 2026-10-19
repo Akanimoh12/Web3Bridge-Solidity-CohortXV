@@ -14,12 +14,13 @@ contract SavingsFacet is VaultBase {
 
     // User Functions
 
-    function deposit(uint256 lockDuration) public payable {
+    function deposit(uint256 lockDuration) public payable whenNotPaused {
         LibVault.VaultStorage storage vs = LibVault.vaultStorage();
 
         if (msg.value == 0) revert ZeroAmount();
-        if (lockDuration < vs.minLockDuration)
+        if (lockDuration < vs.minLockDuration) {
             revert LockTooShort(lockDuration, vs.minLockDuration);
+        }
 
         LibVault.Savings storage s = vs.savings[msg.sender];
 
@@ -44,10 +45,9 @@ contract SavingsFacet is VaultBase {
         vs.totalSaved -= amount;
         emit Withdraw(msg.sender, amount);
 
-        (bool ok, ) = payable(msg.sender).call{value: amount}("");
+        (bool ok,) = payable(msg.sender).call{value: amount}("");
         if (!ok) revert TransferFailed();
     }
-
 
     // Admin Functions
     function setMinLockDuration(uint256 newMin) external onlyOwner {
@@ -56,9 +56,7 @@ contract SavingsFacet is VaultBase {
 
     // Read Functions
 
-    function savings(
-        address user
-    ) external view returns (uint256 amount, uint64 unlockTime) {
+    function savings(address user) external view returns (uint256 amount, uint64 unlockTime) {
         LibVault.Savings storage s = LibVault.vaultStorage().savings[user];
         return (s.amount, uint64(s.unlockTime));
     }
